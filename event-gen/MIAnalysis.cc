@@ -316,8 +316,8 @@ void MIAnalysis::ResetBranches(){
     fTSubLeadingEta = -999;
     fTRotationAngle = -999;
 
-    fTEta = -999;
-    fTPhi = -999;
+
+    
     fTLeadingEta = -999;
     fTLeadingPhi = -999;
     fTLeadingPt = -999;
@@ -328,5 +328,7 @@ void MIAnalysis::ResetBranches(){
         fTRotatedIntensity[iP]= -999;
         fTPixx[iP]= -999;
         fTPixy[iP]= -999;
+        fTEta[iP] = -999;
+        fTPhi[iP] = -999;
     }
 }
