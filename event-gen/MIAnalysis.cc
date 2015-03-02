@@ -265,6 +265,9 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
             fTPixy[counter] = j;
             fTRotatedIntensity[counter] = rotatedimage->GetBinContent(i,j);
             fTIntensity[counter] = unalteredimage->GetBinContent(i,j);
+            fTEta = unalteredimage->GetXaxis()->GetBinCenter(i);
+            fTPhi = unalteredimage->GetYaxis()->GetBinCenter(j);
+
             counter++;
         }
     }
@@ -297,6 +300,10 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("LeadingPhi", &fTLeadingPhi, "LeadingPhi/F");
     tT->Branch("LeadingPt", &fTLeadingPt, "LeadingPt/F");
     tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
+
+
+    tT->Branch("CellEta", &fTEta, "CellEta[NFilled]/I");
+    tT->Branch("CellPhi", &fTPhi, "CellPhi[NFilled]/I");
 
     return;
 }
