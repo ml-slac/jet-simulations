@@ -257,9 +257,9 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     //Step 5: Dump in the tree!
     //-------------------------------------------------------------------------
     int counter=0;
-    for (int i=1; i<=image->GetNbinsX(); i++)
+    for (int i=1; i<=rotatedimage->GetNbinsX(); i++)
     {
-        for (int j=1; j<=image->GetNbinsY(); j++)
+        for (int j=1; j<=rotatedimage->GetNbinsY(); j++)
         {
             fTPixx[counter] = i;
             fTPixy[counter] = j;
