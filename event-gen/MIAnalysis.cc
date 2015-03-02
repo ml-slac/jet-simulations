@@ -265,8 +265,8 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
             fTPixy[counter] = j;
             fTRotatedIntensity[counter] = rotatedimage->GetBinContent(i,j);
             fTIntensity[counter] = unalteredimage->GetBinContent(i,j);
-            fTEta = unalteredimage->GetXaxis()->GetBinCenter(i);
-            fTPhi = unalteredimage->GetYaxis()->GetBinCenter(j);
+            fTEta[counter] = unalteredimage->GetXaxis()->GetBinCenter(i);
+            fTPhi[counter] = unalteredimage->GetYaxis()->GetBinCenter(j);
 
             counter++;
         }
@@ -316,7 +316,8 @@ void MIAnalysis::ResetBranches(){
     fTSubLeadingEta = -999;
     fTRotationAngle = -999;
 
-
+    fTEta = -999;
+    fTPhi = -999;
     fTLeadingEta = -999;
     fTLeadingPhi = -999;
     fTLeadingPt = -999;
