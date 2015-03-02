@@ -265,6 +265,8 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
             fTPixy[counter] = j;
             fTRotatedIntensity[counter] = rotatedimage->GetBinContent(i,j);
             fTIntensity[counter] = unalteredimage->GetBinContent(i,j);
+
+            std::cout << "Eta: " << unalteredimage->GetXaxis()->GetBinCenter(i) << std::endl;
             fTEta[counter] = unalteredimage->GetXaxis()->GetBinCenter(i);
             fTPhi[counter] = unalteredimage->GetYaxis()->GetBinCenter(j);
 
