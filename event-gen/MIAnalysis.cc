@@ -293,6 +293,11 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("Pixy", &fTPixy, "Pixy[NFilled]/I");
     // tT->Branch("Pixy", &fTPixy, "Pixy[NFilled]/I");
 
+    tT->Branch("LeadingEta", &fTLeadingEta, "LeadingEta/F");
+    tT->Branch("LeadingPhi", &fTLeadingPhi, "LeadingPhi/F");
+    tT->Branch("LeadingPt", &fTLeadingPt, "LeadingPt/F");
+    tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
+
     return;
 }
 
