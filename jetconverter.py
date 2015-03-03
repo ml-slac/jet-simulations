@@ -1,32 +1,74 @@
+'''
+file: jetconverter.py
+author: Luke de Oliveira, Mar. 2015 
+
+This file takes files (*.root) produced by the event-gen
+portion of the jet-images codebase and converts them into 
+a more usable format. In particular, this produces a 
+numpy record array with the following fields:
+    
+    * 'image'  : (25, 25) numpy arrays that have been
+                   rotated using cubic spline interpolation
+                   to have the leading and subleading 
+                   subjets aligned. In additon, the images
+                   are pooled so one side of the image 
+                   holds the most energy.
+    
+    * 'signal' : {0, 1} for whether or not the sample 
+                   matches signal or not. Invoke:
+                   python jetconverter.py -h for more help
+
+    * 'jet_{x}': x is {pt, eta, phi}, and is the value of x
+                   for the leading subjet.
+
+
+
+'''
+import sys
+import argparse
+import numpy as np
+
 from rootpy.tree import TreeChain
 from rootpy.io import root_open
 from jettools import rotate_jet, flip_jet
-import numpy as np
 
-import sys
 
+
+# datatypes for outputted file.
 _bufdtype = [('image', 'float64', (25, 25)), 
              ('signal', float),
              ('jet_pt', float),
              ('jet_eta', float),
              ('jet_phi', float)]
 
-def buffer_to_jet(entry, tag = 0):
+def buffer_to_jet(entry, tag = 0, side = 'r'):
     """
     Takes an entry from an ndarray, and a tag = {0, 1} indicating
-    if its a signal entry or not.
+    if its a signal entry or not. The parameter 'side' indicates 
+    which side of the final jet image we want the highest energy.
     """
-    image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle']))
+
+    image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle']), side)
     return (image, tag, entry['LeadingPt'], entry['LeadingEta'], entry['LeadingPhi'])
 
 
 def is_signal(f, matcher = 'Wprime'):
+    """
+    Takes as input a filename and a string to match. If the 
+    'matcher' string is found in the filename, the file is 
+    taken to be a signal file.
+    """
     key = matcher.lower().replace(' ', '').replace('-', '')
     if key in f.lower().replace(' ', '').replace('-', ''):
         return 1.0
     return 0.0
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+parser.add_argument("square", type=int,
+                    help="display a square of a given number")
+parser.add_argument("-v", "--verbosity", type=int,
+                    help="increase output verbosity")
     
     entries = []
     for fname in sys.argv[1:]:
