@@ -11,7 +11,7 @@ numpy record array with the following fields:
                    rotated using cubic spline interpolation
                    to have the leading and subleading 
                    subjets aligned. In additon, the images
-                   are pooled so one side of the image 
+                   are pooled/flipped so one side of the image 
                    holds the most energy.
     
     * 'signal' : {0, 1} for whether or not the sample 
@@ -62,8 +62,6 @@ def is_signal(f, matcher = 'Wprime'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    # parser.add_argument("square", type=int,
-    #                     help="display a square of a given number")
     parser.add_argument('--verbose', 
                         action='store_true', 
                         help='Verbose output')
