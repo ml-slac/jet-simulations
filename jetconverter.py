@@ -30,7 +30,7 @@ import numpy as np
 
 from rootpy.tree import TreeChain
 from rootpy.io import root_open
-from jettools import rotate_jet, flip_jet
+from jettools import rotate_jet, flip_jet, plot_mean_jet
 
 
 
@@ -65,10 +65,29 @@ def is_signal(f, matcher = 'Wprime'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-parser.add_argument("square", type=int,
-                    help="display a square of a given number")
-parser.add_argument("-v", "--verbosity", type=int,
-                    help="increase output verbosity")
+    # parser.add_argument("square", type=int,
+    #                     help="display a square of a given number")
+    parser.add_argument('--verbose', 
+                        action='store_true', 
+                        help='Verbose output')
+
+    parser.add_argument('--signal', 
+                        default='Wprime'
+                        type=str, 
+                        help = 'String to search for in\
+                         filenames to indicate a signal file')
+
+    parser.add_argument('--save', 
+                        default='output.npy', 
+                        type=str, 
+                        help = 'Filename to write out the data.')
+
+
+    parser.add_argument('files', nargs='*', help='Files to pass in')
+
+    args = parser.parse_args()
+
+    
     
     entries = []
     for fname in sys.argv[1:]:
