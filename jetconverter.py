@@ -38,14 +38,14 @@ _bufdtype = [('image', 'float64', (25, 25)),
              ('jet_eta', float),
              ('jet_phi', float)]
 
-def buffer_to_jet(entry, tag = 0, side = 'r'):
+def buffer_to_jet(entry, tag = 0, side = 'r', max_entry = 2000):
     """
     Takes an entry from an ndarray, and a tag = {0, 1} indicating
     if its a signal entry or not. The parameter 'side' indicates 
     which side of the final jet image we want the highest energy.
     """
 
-    image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle']), side)
+    image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle'], normalizer=max_entry), side)
     return (image, tag, entry['LeadingPt'], entry['LeadingEta'], entry['LeadingPhi'])
 
 
@@ -106,7 +106,7 @@ if __name__ == '__main__':
             df = f.EventTree.to_array()
             tag = is_signal(fname, signal_match)
             for jet in df:
-                entries.append(buffer_to_jet(jet, tag))
+                entries.append(buffer_to_jet(jet, tag, max_entry=2600))
 
     df = np.array(entries, dtype=_bufdtype)
     np.save(savefile, df)
