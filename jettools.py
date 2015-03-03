@@ -17,6 +17,7 @@ def rotate_jet(jet, angle, in_radians = True, normalizer = 1800, dim=25):
     interpolation
     """
     im = jet.reshape((dim, dim))
+    np.clip(im, -1, normalizer, out=im)
     im = np.flipud(im.T) / normalizer
 
     if in_radians:
