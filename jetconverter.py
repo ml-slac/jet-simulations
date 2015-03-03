@@ -27,9 +27,6 @@ numpy record array with the following fields:
 import sys
 import argparse
 import numpy as np
-
-from rootpy.tree import TreeChain
-from rootpy.io import root_open
 from jettools import rotate_jet, flip_jet, plot_mean_jet
 
 
@@ -72,32 +69,48 @@ if __name__ == '__main__':
                         help='Verbose output')
 
     parser.add_argument('--signal', 
-                        default='Wprime'
-                        type=str, 
+                        default='Wprime',
                         help = 'String to search for in\
                          filenames to indicate a signal file')
 
     parser.add_argument('--save', 
                         default='output.npy', 
-                        type=str, 
                         help = 'Filename to write out the data.')
 
+    parser.add_argument('--plot',  
+                        help = 'File prefix that will be part of plotting filenames.')
 
     parser.add_argument('files', nargs='*', help='Files to pass in')
 
     args = parser.parse_args()
 
-    
-    
+    if len(args.files) < 1:
+        sys.stderr.write('Must pass at least one file in.\n')
+        exit(1)
+
+    signal_match = args.signal
+    files = args.files
+    savefile = args.save
+    plt_prefix = ''
+    if args.plot:
+        plt_prefix = args.plot
+
+
+    from rootpy.io import root_open
+
     entries = []
-    for fname in sys.argv[1:]:
-        print 'Working on file: {}'.format(fname)
+    for fname in files:
+        if args.verbose:
+            print 'Working on file: {}'.format(fname)
         with root_open(fname) as f:
             df = f.EventTree.to_array()
-            tag = is_signal(fname, 'wprime')
+            tag = is_signal(fname, signal_match)
             for jet in df:
                 entries.append(buffer_to_jet(jet, tag))
 
     df = np.array(entries, dtype=_bufdtype)
+    np.save(savefile, df)
 
-    np.save('test.npy', x)
+    if plt_prefix != '':
+        plot_mean_jet(df[df['signal'] == 0], title="Average Jet Image, Background").savefig(plt_prefix + '_bkg.pdf')
+        plot_mean_jet(df[df['signal'] == 1], title="Average Jet Image, Signal").savefig(plt_prefix + '_signal.pdf')
