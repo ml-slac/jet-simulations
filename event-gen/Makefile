@@ -6,7 +6,6 @@
 # Note: source setup.sh before make             #
 # --------------------------------------------- #
 
-CXX           ?= g++
 CXXFLAGS =   -O2 -Wall 
 
 .PHONY: clean debug all

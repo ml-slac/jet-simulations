@@ -104,7 +104,7 @@ if __name__ == '__main__':
             df = f.EventTree.to_array()
             tag = is_signal(fname, signal_match)
             for jet in df:
-                entries.append(buffer_to_jet(jet, tag, max_entry=2600))
+                entries.append(buffer_to_jet(jet, tag, max_entry=1900))
 
     df = np.array(entries, dtype=_bufdtype)
     np.save(savefile, df)

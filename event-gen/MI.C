@@ -100,7 +100,8 @@ int main(int argc, char* argv[]){
      pythia8->readString("32:onIfAny = 6");
      pythia8->readString("24:onMode = off");
      pythia8->readString("24:onIfAny = 1 2 3 4");
-     pythia8->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */); //this has to be the last line! 
+     // pythia8->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */); //this has to be the last line! 
+     pythia8->init();
    }else if(proc ==2){
       std::stringstream bosonmass_str; bosonmass_str<< "34:m0=" << boson_mass ;
       pythia8->readString(bosonmass_str.str());
@@ -112,7 +113,8 @@ int main(int argc, char* argv[]){
       pythia8->readString("24:onIfAny = 1 2 3 4");
       pythia8->readString("23:onMode = off");
       pythia8->readString("23:onIfAny = 12");
-      pythia8->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */); //this has to be the last line!
+      // pythia8->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */); //this has to be the last line!
+      pythia8->init();
    }else if(proc == 3){
       std::stringstream bosonmass_str; bosonmass_str<< "34:m0=" << boson_mass ;
       pythia8->readString(bosonmass_str.str());
@@ -124,7 +126,8 @@ int main(int argc, char* argv[]){
       pythia8->readString("24:onIfAny = 11 12");
       pythia8->readString("23:onMode = off");
       pythia8->readString("23:onIfAny = 1 2 3 4 5");
-      pythia8->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */); //this has to be the last line!
+      // pythia8->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */); //this has to be the last line!
+      pythia8->init();
    }else if(proc == 4){ 
       pythia8->readString("HardQCD:all = on");
       std::stringstream ptHatMin;
@@ -133,7 +136,8 @@ int main(int argc, char* argv[]){
       ptHatMax << "PhaseSpace:pTHatMax  =" << pThatmax;
       pythia8->readString(ptHatMin.str());
       pythia8->readString(ptHatMax.str());
-      pythia8->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */); //this has to be the last line!
+      // pythia8->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */); //this has to be the last line!
+      pythia8->init();
    }else{ throw std::invalid_argument("received invalid 'process'");}
 
    //Setup the pileup
@@ -146,7 +150,8 @@ int main(int argc, char* argv[]){
    pythia_MB->readString("HardQCD:all = off");
    pythia_MB->readString("PhaseSpace:pTHatMin  = .1");
    pythia_MB->readString("PhaseSpace:pTHatMax  = 20000");
-   pythia_MB->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */);
+   // pythia_MB->init(2212 /* p */, 2212 /* p */, 14000. /* TeV */);
+   pythia_MB->init();
 
    MIAnalysis * analysis = new MIAnalysis();
    analysis->SetOutName(outName);
