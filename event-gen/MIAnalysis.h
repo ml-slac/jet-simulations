@@ -88,8 +88,8 @@ class MIAnalysis
 
 
         float fTPt [MaxN];
-        int fTEta [MaxN];
-        int fTPhi [MaxN];
+        double fTEta [MaxN];
+        double fTPhi [MaxN];
 
         float fTIntensity[MaxN];
         float fTRotatedIntensity[MaxN];
