@@ -1,3 +1,10 @@
+'''
+file: jettools.py
+author: Luke de Oliveira, Mar. 2015 
+
+Provides support for jet rotation and flipping
+
+'''
 import numpy as np
 import skimage.transform as sk
 import matplotlib.pyplot as plt
@@ -52,9 +59,3 @@ def plot_mean_jet(rec, field = 'image', title = 'Average Jet Image'):
     plt.title(r''+title)
     return fig
     
-
-
-# x = np.array((rotate_jet(j['Intensity'], -j['RotationAngle']), j['LeadingPt']) for j in wprime, dtype=[('image', 'float64', (25, 25)), ('jet_pt',float)])
-
-
-# new = [(rotate_jet(j['Intensity'], -j['RotationAngle']), j['LeadingPt']) for j in wprime]
