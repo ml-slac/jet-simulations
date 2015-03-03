@@ -1,5 +1,7 @@
 import numpy as np
-import skimage.transform.rotate as im_rotate
+import skimage.transform as sk
+import matplotlib.pyplot as plt
+from matplotlib.colors import LogNorm
 
 def rotate_jet(jet, angle, in_radians = True, normalizer = 1450, dim=25):
 	"""
@@ -12,7 +14,7 @@ def rotate_jet(jet, angle, in_radians = True, normalizer = 1450, dim=25):
 	if in_radians:
 		angle = np.rad2deg(angle)
 
-	return im_rotate(im, angle, order = 3)
+	return sk.rotate(im, angle, order = 3)
 
 
 def flip_jet(jet, pool = 'r'):
@@ -42,9 +44,16 @@ def flip_jet(jet, pool = 'r'):
 		raise ValueError('Jet pooling side must have l -OR- r in the name.')
 
 
+def plot_mean_jet(rec, field = 'image', title = 'Average Jet Image'):
+	fig = plt.figure(figsize=(8, 8), dpi=100)
+	ax = fig.add_subplot(111)
+	im = ax.imshow(np.mean(rec[field], axis = 0),  norm=LogNorm(vmin=0.00001, vmax=1), interpolation='nearest')
+	plt.title(r''+title)
+	return fig
+	
 
 
-x = np.array((rotate_jet(j['Intensity'], -j['RotationAngle']), j['LeadingPt']) for j in wprime, dtype=[('image', 'float64', (25, 25)), ('jet_pt',float)])
+# x = np.array((rotate_jet(j['Intensity'], -j['RotationAngle']), j['LeadingPt']) for j in wprime, dtype=[('image', 'float64', (25, 25)), ('jet_pt',float)])
 
 
-new = [(rotate_jet(j['Intensity'], -j['RotationAngle']), j['LeadingPt']) for j in wprime]
+# new = [(rotate_jet(j['Intensity'], -j['RotationAngle']), j['LeadingPt']) for j in wprime]
