@@ -73,7 +73,8 @@ class MIAnalysis
 
         TH2F* detector;
 
-        static const int MaxN = 625;
+        // static const int MaxN = 625;
+        static const int MaxN = 900;
 
         int fTNFilled;
 

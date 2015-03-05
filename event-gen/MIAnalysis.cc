@@ -190,25 +190,23 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         consts_image.push_back(const_hold);
     }
 
-    double upshift = 0.3;
-
     //Step 1: Center on the leading subjet
     for (int i =0; i < sorted_consts.size(); i++)
     {
         consts_image[i].first = consts_image[i].first-subjets_image[0].first;
-        consts_image[i].second = consts_image[i].second-subjets_image[0].second + upshift;
+        consts_image[i].second = consts_image[i].second-subjets_image[0].second;
     }
     for (int i =1; i >= 0; i--)
     {
         subjets_image[i].first = subjets_image[i].first - subjets_image[0].first;
-        subjets_image[i].second = subjets_image[i].second- subjets_image[0].second + upshift;
+        subjets_image[i].second = subjets_image[i].second- subjets_image[0].second;
     }
 
     //Step 2: Fill in the unrotated image
     //-------------------------------------------------------------------------   
-    TH2F* unalteredimage = new TH2F("", "", 25, -1, 1, 25, -1, 1);
+    // TH2F* unalteredimage = new TH2F("", "", 25, -1, 1, 25, -1, 1);
 
-    // TH2F* unalteredimage = new TH2F("", "", 30, -2, 2, 30, -2, 2);
+    TH2F* unalteredimage = new TH2F("", "", 30, -2, 2, 30, -2, 2);
 
     for (int i = 0; i < sorted_consts.size(); i++)
     {
@@ -251,8 +249,8 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
 
     //Step 4: fill in the rotated image
     //-------------------------------------------------------------------------
-    TH2F* rotatedimage = new TH2F("", "", 25, -1, 1, 25, -1, 1);
-    // TH2F* rotatedimage = new TH2F("", "", 30, -2, 2, 30, -2, 2);
+    // TH2F* rotatedimage = new TH2F("", "", 25, -1, 1, 25, -1, 1);
+    TH2F* rotatedimage = new TH2F("", "", 30, -2, 2, 30, -2, 2);
     for (int i = 0; i < sorted_consts.size(); i++)
     {
         rotatedimage->Fill(consts_image[i].first,consts_image[i].second,sorted_consts[i].e());

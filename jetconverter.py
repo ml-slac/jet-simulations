@@ -31,12 +31,6 @@ from jettools import rotate_jet, flip_jet, plot_mean_jet
 
 
 
-# datatypes for outputted file.
-_bufdtype = [('image', 'float64', (25, 25)), 
-             ('signal', float),
-             ('jet_pt', float),
-             ('jet_eta', float),
-             ('jet_phi', float)]
 
 def buffer_to_jet(entry, tag = 0, side = 'r', max_entry = 2000):
     """
@@ -45,7 +39,7 @@ def buffer_to_jet(entry, tag = 0, side = 'r', max_entry = 2000):
     which side of the final jet image we want the highest energy.
     """
 
-    image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle'], normalizer=max_entry), side)
+    image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle'], dim=np.sqrt(len(entry['Intensity'])), normalizer=max_entry), side)
     return (image / np.linalg.norm(image), tag, entry['LeadingPt'], entry['LeadingEta'], entry['LeadingPhi'])
 
 
@@ -106,6 +100,13 @@ if __name__ == '__main__':
             for jet in df:
                 entries.append(buffer_to_jet(jet, tag, max_entry=2600))
 
+    # datatypes for outputted file.
+    dim = entries[0][0].shape
+    _bufdtype = [('image', 'float64', dim), 
+                 ('signal', float),
+                 ('jet_pt', float),
+                 ('jet_eta', float),
+                 ('jet_phi', float)]
     df = np.array(entries, dtype=_bufdtype)
     np.save(savefile, df)
 
