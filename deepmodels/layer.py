@@ -57,10 +57,10 @@ class Layer(object):
 		self._W *= self.momentum
 		self._b *= self.momentum
 
-		self._W -= self.learning * self._grad_W
-		self._b -= self.learning * self._grad_b
+		self._W -= self.learning.rate() * self._grad_W
+		self._b -= self.learning.rate() * self._grad_b
 
-		self._W -= self.learning * self.l2_reg * self.W;
+		self._W -= self.learning.rate() * self.l2_reg * self.W;
 
 		self.W += self._W
 		self.b += self._b
