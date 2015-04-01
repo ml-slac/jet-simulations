@@ -65,7 +65,9 @@ class ConstantLearningSchedule(BaseLearningSchedule):
 		super(ConstantLearningSchedule, self).__init__()
 		self._rate = rate
 	def rate(self):
-		return self._rate
+		return self._rate	
+	def next(self):
+		return
 
 
 class LinearLearningSchedule(BaseLearningSchedule):

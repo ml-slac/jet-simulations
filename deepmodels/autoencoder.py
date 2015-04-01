@@ -89,6 +89,10 @@ class Autoencoder(object):
 			if holdout is not None:
 				self.errors.append(self.cost.cost(self.reconstruct(holdout), holdout))
 
+			self.encoder.learning.next()
+			self.decoder.learning.next()
+
+
 	
 
 class NormalNoise(object):
