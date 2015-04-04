@@ -28,8 +28,14 @@
 using namespace std;
 
 // Constructor 
-MIAnalysis::MIAnalysis()
+MIAnalysis::MIAnalysis(int imagesize)
 {
+    imagesize *= imagesize;
+    MaxN = imagesize;
+    fTIntensity = new float[imagesize];
+    fTRotatedIntensity = new float[imagesize];
+
+
     if(fDebug) cout << "MIAnalysis::MIAnalysis Start " << endl;
     ftest = 0;
     fDebug = false;
@@ -54,6 +60,9 @@ MIAnalysis::MIAnalysis()
 MIAnalysis::~MIAnalysis()
 {
     delete tool;
+
+    delete[] fTIntensity;
+    delete[] fTRotatedIntensity;
 }
 
 // Begin method
@@ -248,7 +257,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
 
     //Step 4: fill in the rotated image
     //-------------------------------------------------------------------------
-    TH2F* rotatedimage = new TH2F("", "", 25, -1, 1, 25, -1, 1);
+    TH2F* rotatedimage = new TH2F("", "", pixels, -range, range, pixels, -range, range);
     for (int i = 0; i < sorted_consts.size(); i++)
     {
         rotatedimage->Fill(consts_image[i].first,consts_image[i].second,sorted_consts[i].e());
@@ -262,12 +271,8 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     {
         for (int j=1; j<=rotatedimage->GetNbinsY(); j++)
         {
-            fTPixx[counter] = i;
-            fTPixy[counter] = j;
             fTRotatedIntensity[counter] = rotatedimage->GetBinContent(i,j);
             fTIntensity[counter] = orig_im->GetBinContent(i,j);
-            fTEta[counter] = orig_im->GetXaxis()->GetBinCenter(i);
-            fTPhi[counter] = orig_im->GetYaxis()->GetBinCenter(j);
 
             counter++;
         }
@@ -285,17 +290,14 @@ void MIAnalysis::DeclareBranches()
     // Event Properties 
     tT->Branch("NFilled", &fTNFilled, "NFilled/I");
 
-    tT->Branch("Intensity", &fTIntensity, "Intensity[NFilled]/F");
+    tT->Branch("Intensity", *&fTIntensity, "Intensity[NFilled]/F");
 
     tT->Branch("RotatedIntensity", 
-        &fTRotatedIntensity, "RotatedIntensity[NFilled]/F");
+        *&fTRotatedIntensity, "RotatedIntensity[NFilled]/F");
 
     tT->Branch("SubLeadingEta", &fTSubLeadingEta, "SubLeadingEta/F");
     tT->Branch("SubLeadingPhi", &fTSubLeadingPhi, "SubLeadingPhi/F");
 
-    tT->Branch("Pixx", &fTPixx, "Pixx[NFilled]/I");
-    tT->Branch("Pixy", &fTPixy, "Pixy[NFilled]/I");
-    // tT->Branch("Pixy", &fTPixy, "Pixy[NFilled]/I");
 
     tT->Branch("LeadingEta", &fTLeadingEta, "LeadingEta/F");
     tT->Branch("LeadingPhi", &fTLeadingPhi, "LeadingPhi/F");
@@ -303,8 +305,6 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
 
 
-    tT->Branch("CellEta", &fTEta, "CellEta[NFilled]/D");
-    tT->Branch("CellPhi", &fTPhi, "CellPhi[NFilled]/D");
 
     return;
 }
@@ -327,9 +327,5 @@ void MIAnalysis::ResetBranches(){
     {
         fTIntensity[iP]= -999;
         fTRotatedIntensity[iP]= -999;
-        fTPixx[iP]= -999;
-        fTPixy[iP]= -999;
-        fTEta[iP] = -999;
-        fTPhi[iP] = -999;
     }
 }

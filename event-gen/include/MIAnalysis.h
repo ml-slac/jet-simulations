@@ -27,7 +27,7 @@ using namespace fastjet;
 class MIAnalysis
 {
     public:
-        MIAnalysis();
+        MIAnalysis(int imagesize = 25);
         ~MIAnalysis();
         
         void Begin();
@@ -73,7 +73,7 @@ class MIAnalysis
 
         TH2F* detector;
 
-        static const int MaxN = 625;
+        int MaxN;
 
         int fTNFilled;
 
@@ -87,23 +87,17 @@ class MIAnalysis
         float fTRotationAngle;
 
 
-        // float *fTPt;
-        // double *fTEta;
-        // double *fTPhi;
-// 
-        // float *fTIntensity;
-        // float *fTRotatedIntensity;
-        // int  *fTPixx;
-        // int  *fTPixy; 
-// 
-        float fTPt [MaxN];
-        double fTEta [MaxN];
-        double fTPhi [MaxN];
-// 
-        float fTIntensity[MaxN];
-        float fTRotatedIntensity[MaxN];
-        int  fTPixx[MaxN];
-        int  fTPixy[MaxN]; 
+        float *fTIntensity;
+        float *fTRotatedIntensity;
+
+        // float fTPt [MaxN];
+        // double fTEta [MaxN];
+        // double fTPhi [MaxN];
+
+        // float fTIntensity[MaxN];
+        // float fTRotatedIntensity[MaxN];
+        // int  fTPixx[MaxN];
+        // int  fTPixy[MaxN]; 
 
 
  

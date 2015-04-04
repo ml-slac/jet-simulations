@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
     pythia_MB->readString("PhaseSpace:pTHatMax  = 20000");
     pythia_MB->init();
 
-    MIAnalysis * analysis = new MIAnalysis();
+    MIAnalysis * analysis = new MIAnalysis(pixels);
     analysis->SetOutName(outName);
     analysis->Begin();
     analysis->Debug(fDebug);
