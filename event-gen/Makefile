@@ -9,6 +9,9 @@
 CXX           ?= g++
 CXXFLAGS =   -O2 -Wall 
 
+BOOSTINCDIR = /usr/local/include
+BOOSTLIBLOCATION = /usr/local/lib
+
 .PHONY: clean debug all
 
 all: MI
