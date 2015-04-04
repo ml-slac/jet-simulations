@@ -46,7 +46,7 @@ class BaseLearningSchedule(object):
 		super(BaseLearningSchedule, self).__init__()
 		self.initial = initial
 		self.final = final
-		self.rate = initial
+		self._rate = initial
 
 		self.at_final = False
 
@@ -65,7 +65,9 @@ class ConstantLearningSchedule(BaseLearningSchedule):
 		super(ConstantLearningSchedule, self).__init__()
 		self._rate = rate
 	def rate(self):
-		return self._rate
+		return self._rate	
+	def next(self):
+		return
 
 
 class LinearLearningSchedule(BaseLearningSchedule):
@@ -85,7 +87,7 @@ class LinearLearningSchedule(BaseLearningSchedule):
 		return self._rate
 
 	def next(self):
-		if self._rate > final:
+		if self._rate > self.final:
 			self._rate -= self._delta
 
 
@@ -106,7 +108,7 @@ class GeometricLearningSchedule(BaseLearningSchedule):
 		return self._rate
 
 	def next(self):
-		if self._rate > final:
+		if self._rate > self.final:
 			self._rate *= self._decay
 
 

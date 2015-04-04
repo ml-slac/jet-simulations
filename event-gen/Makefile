@@ -1,50 +1,117 @@
 # --------------------------------------------- #
-# Makefile for Mutual Information code          #
-# Benjamin Nachman, Aug 21, 2014                # 
-# Originally by Pascal Nef, March 6th 2014      #
-#                                               #
-# Note: source setup.sh before make             #
+# Makefile for Jet Images Framework             #
+# Luke de Oliveira, April 3, 2015               # 
+# lukedeo@stanford.edu                          # 
 # --------------------------------------------- #
 
-CXX           ?= g++
-CXXFLAGS =   -O2 -Wall 
+# --- set directories
+BIN          := bin
+SRC          := src
+INC          := include
+LIB          := $(CURDIR)/lib
 
-.PHONY: clean debug all
+# --- set search path
+vpath %.o    $(BIN)
+vpath %.cc  $(SRC) 
+vpath %.h   $(INC) 
 
-all: MI
+# --- set compiler and flags
 
-MI:  MI.so MITools.so MIAnalysis.so
-	$(CXX) MI.so MITools.so MIAnalysis.so -o $@.exe \
-	$(CXXFLAGS) -Wno-shadow  \
-	`root-config --glibs` -lEG -lEGPythia8 \
-	-L$(FASTJETLOCATION)/lib `$(FASTJETLOCATION)/bin/fastjet-config --libs --plugins ` -lSubjetJVF  -lVertexJets \
-	-L$(PYTHIA8LOCATION)/lib -lpythia8 -llhapdfdummy \
-	-L$(BOOSTLIBLOCATION) -lboost_program_options 
+CXX          ?= g++
+CXXFLAGS     := -Wall -fPIC -I$(INC) -g -std=c++11 
 
-MI.so: MI.C    MITools.so MIAnalysis.so   
-	$(CXX) -o $@ -c $<  \
-	$(CXXFLAGS) -Wno-shadow -fPIC -shared \
-	`$(FASTJETLOCATION)/bin/fastjet-config --cxxflags --plugins` -lSubjetJVF -lVertexJets \
-	-I$(PYTHIA8LOCATION)/include \
-	-I $(BOOSTINCDIR) \
-	`root-config --cflags` 
+ifeq ($(CXX),clang++)
+CXXFLAGS += -stdlib=libc++
+endif
 
-MITools.so : MITools.cc MITools.h
-	$(CXX) -o $@ -c $<  \
-	$(CXXFLAGS) -Wno-shadow -fPIC -shared \
-	`$(FASTJETLOCATION)/bin/fastjet-config --cxxflags --plugins` -lSubjetJVF -lVertexJets \
-	-I$(PYTHIA8LOCATION)/include \
-	`root-config --cflags`
+# --- HEP flags
+FASTJETFLAGS := $(shell fastjet-config --cxxflags --plugins)
+FASTJETLDFLAGS =
+FASTJETLIBS = $(shell fastjet-config --libs --plugins)
 
-MIAnalysis.so : MIAnalysis.cc MIAnalysis.h 
-	$(CXX) -o $@ -c $<  \
-	$(CXXFLAGS) -Wno-shadow -fPIC -shared \
-	`$(FASTJETLOCATION)/bin/fastjet-config --cxxflags --plugins` -lSubjetJVF -lVertexJets \
-	-I$(PYTHIA8LOCATION)/include \
-	`root-config --cflags --libs` 
+ROOTFLAGS    := $(shell root-config --cflags)
+ROOTLDFLAGS   := $(shell root-config --ldflags)
+ROOTLIBS     := $(shell root-config --glibs)
+
+PYTHIAFLAGS  := $(shell pythia8-config --cxxflags)
+PYTHIALDFLAGS:= $(shell pythia8-config --ldflags)
+PYTHIALIBS = $(shell pythia8-config --libs)
+
+HEPLIBS += $(FASTJETLIBS)
+HEPLIBS += $(ROOTLIBS)
+HEPLIBS += $(PYTHIALIBS)
+
+
+# --- Add HEP flags to common stuff
+CXXFLAGS += $(ROOTFLAGS)
+CXXFLAGS += $(FASTJETFLAGS)
+CXXFLAGS += $(PYTHIAFLAGS)
+
+LIBS     += $(HEPLIBS)
+
+LDFLAGS  = $(ROOTLDFLAGS) $(PYTHIALDFLAGS) $(FASTJETLDFLAGS)
+
+
+# -- Boost Flags
+BOOSTINCDIR = /usr/local/include
+BOOSTLIBLOCATION = /usr/local/lib
+
+CXXFLAGS += -I$(BOOSTINCDIR)
+LIBS += -L$(BOOSTLIBLOCATION) -lboost_program_options 
+
+
+# --- building excecutable
+OBJ := MI.o MIAnalysis.o MITools.o
+
+EXECUTABLE   := event-gen
+
+
+all: $(EXECUTABLE)
+	@echo "jet-images build sucessful."
+
+$(EXECUTABLE): $(OBJ:%=$(BIN)/%)
+	@echo "linking $^ --> $@"
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS) 
+
+
+# --- auto dependency generation for build --- #
+# ---------------------------------------------#
+
+# compile rule
+$(BIN)/%.o: %.cc
+	@echo compiling $<
+	@mkdir -p $(BIN)
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+# use auto dependency generation
+DEP = $(BIN)
+
+ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),rmdep)
+ifneq ($(MAKECMDGOALS),purge)
+include  $(OBJ:%.o=$(DEP)/%.d)
+endif
+endif
+endif
+
+DEPTARGSTR = -MT $(BIN)/$*.o -MT $(DEP)/$*.d
+$(DEP)/%.d: %.cxx
+	@echo making dependencies for $<
+	@mkdir -p $(DEP)
+	@$(CXX) -MM -MP $(DEPTARGSTR) $(CXXFLAGS) $< -o $@ 
+
+# clean
+.PHONY : clean rmdep
+CLEANLIST     = *~ *.o *.o~ *.d core 
 
 clean:
-	rm -rf *.exe
-	rm -rf *.o
-	rm -rf *.so
-	rm -f *~
+	rm -fr $(CLEANLIST) $(CLEANLIST:%=$(BIN)/%) $(CLEANLIST:%=$(DEP)/%)
+	rm -fr $(BIN) 
+
+purge:
+	rm -fr $(CLEANLIST) $(CLEANLIST:%=$(BIN)/%) $(CLEANLIST:%=$(DEP)/%)
+	rm -fr $(BIN) 
+	rm -fr $(EXECUTABLE)
+
+rmdep: 
+	rm -f $(DEP)/*.d

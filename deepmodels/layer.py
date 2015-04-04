@@ -3,6 +3,7 @@ import numpy as np
 
 # -- local imports
 from .activation import *
+from .cost import ConstantLearningSchedule, LinearLearningSchedule, GeometricLearningSchedule
 
 class Layer(object):
 	"""
@@ -15,7 +16,10 @@ class Layer(object):
 		self.inputs = inputs
 		self.outputs = outputs
 		self.activ = activ
-		self.learning = learning
+		if (type(learning) == float) or (type(learning) == int):
+			self.learning = ConstantLearningSchedule(learning)
+		else:
+			self.learning = learning
 		self.momentum = momentum
 		self.l2_reg = l2_reg
  
@@ -53,10 +57,10 @@ class Layer(object):
 		self._W *= self.momentum
 		self._b *= self.momentum
 
-		self._W -= self.learning * self._grad_W
-		self._b -= self.learning * self._grad_b
+		self._W -= self.learning.rate() * self._grad_W
+		self._b -= self.learning.rate() * self._grad_b
 
-		self._W -= self.learning * self.l2_reg * self.W;
+		self._W -= self.learning.rate() * self.l2_reg * self.W;
 
 		self.W += self._W
 		self.b += self._b
