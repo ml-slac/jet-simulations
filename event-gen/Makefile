@@ -71,7 +71,7 @@ all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJ:%=$(BIN)/%)
 	@echo "linking $^ --> $@"
-	$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS) 
+	@$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS) 
 
 
 # --- auto dependency generation for build --- #
@@ -81,7 +81,7 @@ $(EXECUTABLE): $(OBJ:%=$(BIN)/%)
 $(BIN)/%.o: %.cc
 	@echo compiling $<
 	@mkdir -p $(BIN)
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	@$(CXX) -c $(CXXFLAGS) $< -o $@
 
 # use auto dependency generation
 DEP = $(BIN)
