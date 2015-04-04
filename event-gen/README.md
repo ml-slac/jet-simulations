@@ -2,6 +2,6 @@
 
 1. `source setup.sh`
 2. `make`
-3. `./MI.exe --help`
+3. `./event-gen --help`
 
 
