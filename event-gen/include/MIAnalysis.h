@@ -73,7 +73,7 @@ class MIAnalysis
 
         TH2F* detector;
 
-        static const int MaxN = 625;
+        int MaxN;
 
         int fTNFilled;
 
@@ -87,13 +87,8 @@ class MIAnalysis
         float fTRotationAngle;
 
 
-        float *fTPt;
-        double *fTEta;
-        double *fTPhi;
         float *fTIntensity;
         float *fTRotatedIntensity;
-        int  *fTPixx;
-        int  *fTPixy; 
 
         // float fTPt [MaxN];
         // double fTEta [MaxN];

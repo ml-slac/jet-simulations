@@ -30,13 +30,10 @@ using namespace std;
 // Constructor 
 MIAnalysis::MIAnalysis(int imagesize)
 {
-    fTPt = new float[imagesize];
-    fTEta = new double[imagesize];
-    fTPhi = new double[imagesize];
+    imagesize *= imagesize;
+    MaxN = imagesize;
     fTIntensity = new float[imagesize];
     fTRotatedIntensity = new float[imagesize];
-    fTPixx = new int[imagesize];
-    fTPixy = new int[imagesize]; 
 
 
     if(fDebug) cout << "MIAnalysis::MIAnalysis Start " << endl;
@@ -64,13 +61,8 @@ MIAnalysis::~MIAnalysis()
 {
     delete tool;
 
-    delete[] fTPt;
-    delete[] fTEta;
-    delete[] fTPhi;
     delete[] fTIntensity;
     delete[] fTRotatedIntensity;
-    delete[] fTPixx;
-    delete[] fTPixy;
 }
 
 // Begin method
@@ -279,12 +271,8 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     {
         for (int j=1; j<=rotatedimage->GetNbinsY(); j++)
         {
-            fTPixx[counter] = i;
-            fTPixy[counter] = j;
             fTRotatedIntensity[counter] = rotatedimage->GetBinContent(i,j);
             fTIntensity[counter] = orig_im->GetBinContent(i,j);
-            fTEta[counter] = orig_im->GetXaxis()->GetBinCenter(i);
-            fTPhi[counter] = orig_im->GetYaxis()->GetBinCenter(j);
 
             counter++;
         }
@@ -310,9 +298,6 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("SubLeadingEta", &fTSubLeadingEta, "SubLeadingEta/F");
     tT->Branch("SubLeadingPhi", &fTSubLeadingPhi, "SubLeadingPhi/F");
 
-    tT->Branch("Pixx", *&fTPixx, "Pixx[NFilled]/I");
-    tT->Branch("Pixy", *&fTPixy, "Pixy[NFilled]/I");
-    // tT->Branch("Pixy", &fTPixy, "Pixy[NFilled]/I");
 
     tT->Branch("LeadingEta", &fTLeadingEta, "LeadingEta/F");
     tT->Branch("LeadingPhi", &fTLeadingPhi, "LeadingPhi/F");
@@ -320,8 +305,6 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
 
 
-    tT->Branch("CellEta", *&fTEta, "CellEta[NFilled]/D");
-    tT->Branch("CellPhi", *&fTPhi, "CellPhi[NFilled]/D");
 
     return;
 }
@@ -344,9 +327,5 @@ void MIAnalysis::ResetBranches(){
     {
         fTIntensity[iP]= -999;
         fTRotatedIntensity[iP]= -999;
-        fTPixx[iP]= -999;
-        fTPixy[iP]= -999;
-        fTEta[iP] = -999;
-        fTPhi[iP] = -999;
     }
 }
