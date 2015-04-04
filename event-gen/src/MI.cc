@@ -56,20 +56,24 @@ int main(int argc, char* argv[])
     cout << endl;
 
     // agruments 
-    string outName   = "MI.root";
-    int    pileup    = 0;
-    int    nEvents   = 0;
-    int    fDebug    = 0;
-    float  pThatmin  = 100;
-    float  pThatmax  = 500;
-    float  boson_mass= 1500;
-    int    proc      = 1;
-    int    seed      = -1;
+    string outName     = "MI.root";
+    int    pileup      = 0;
+    int    nEvents     = 0;
+    int    pixels      = 25;
+    int    fDebug      = 0;
+    float  pThatmin    = 100;
+    float  pThatmax    = 500;
+    float  boson_mass  = 1500;
+    float  image_range = 1.0;
+    int    proc        = 1;
+    int    seed        = -1;
 
     po::options_description desc("Allowed options");
     desc.add_options()
         ("help", "produce help message")
         ("NEvents",   po::value<int>(&nEvents)->default_value(10) ,    "Number of Events ")
+        ("Pixels",    po::value<int>(&pixels)->default_value(25) ,    "Number of pixels per dimension ")
+        ("Range",     po::value<float>(&image_range)->default_value(1) , "Image captures [-w, w] x [-w, w], where w is the value passed.")
         ("Debug",     po::value<int>(&fDebug) ->default_value(0) ,     "Debug flag")
         ("Pileup",    po::value<int>(&pileup)->default_value(0), "Number of Additional Interactions")
         ("OutFile",   po::value<string>(&outName)->default_value("test.root"), "output file name")
@@ -183,7 +187,7 @@ int main(int argc, char* argv[])
         {
             std::cout << iev << std::endl;
         }
-        analysis->AnalyzeEvent(iev, pythia8, pythia_MB, pileup);
+        analysis->AnalyzeEvent(iev, pythia8, pythia_MB, pileup, pixels, image_range);
     }
 
     analysis->End();

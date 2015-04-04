@@ -32,7 +32,7 @@ class MIAnalysis
         
         void Begin();
         void AnalyzeEvent(int iEvt, Pythia8::Pythia *pythia8,  
-            Pythia8::Pythia *pythia_MB, int NPV);
+            Pythia8::Pythia *pythia_MB, int NPV, int pixels, float range);
 
         void End();
         void DeclareBranches();
@@ -87,10 +87,19 @@ class MIAnalysis
         float fTRotationAngle;
 
 
+        // float *fTPt;
+        // double *fTEta;
+        // double *fTPhi;
+// 
+        // float *fTIntensity;
+        // float *fTRotatedIntensity;
+        // int  *fTPixx;
+        // int  *fTPixy; 
+// 
         float fTPt [MaxN];
         double fTEta [MaxN];
         double fTPhi [MaxN];
-
+// 
         float fTIntensity[MaxN];
         float fTRotatedIntensity[MaxN];
         int  fTPixx[MaxN];

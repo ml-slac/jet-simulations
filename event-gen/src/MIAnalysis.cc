@@ -79,7 +79,8 @@ void MIAnalysis::End()
 }
 
 // Analyze
-void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythia* pythia_MB, int NPV)
+void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythia* pythia_MB, int NPV,
+    int pixels, float range)
 {
 
     if(fDebug) cout << "MIAnalysis::AnalyzeEvent Begin " << endl;
@@ -204,11 +205,11 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
 
     //Step 2: Fill in the unrotated image
     //-------------------------------------------------------------------------   
-    TH2F* unalteredimage = new TH2F("", "", 25, -1, 1, 25, -1, 1);
+    TH2F* orig_im = new TH2F("", "", pixels, -range, range, pixels, -range, range);
 
     for (int i = 0; i < sorted_consts.size(); i++)
     {
-        unalteredimage->Fill(consts_image[i].first,consts_image[i].second,sorted_consts[i].e());
+        orig_im->Fill(consts_image[i].first,consts_image[i].second,sorted_consts[i].e());
       //std::cout << i << "       " << consts_image[i].first  << " " << consts_image[i].second << std::endl;  
     }
 
@@ -264,9 +265,9 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
             fTPixx[counter] = i;
             fTPixy[counter] = j;
             fTRotatedIntensity[counter] = rotatedimage->GetBinContent(i,j);
-            fTIntensity[counter] = unalteredimage->GetBinContent(i,j);
-            fTEta[counter] = unalteredimage->GetXaxis()->GetBinCenter(i);
-            fTPhi[counter] = unalteredimage->GetYaxis()->GetBinCenter(j);
+            fTIntensity[counter] = orig_im->GetBinContent(i,j);
+            fTEta[counter] = orig_im->GetXaxis()->GetBinCenter(i);
+            fTPhi[counter] = orig_im->GetYaxis()->GetBinCenter(j);
 
             counter++;
         }
