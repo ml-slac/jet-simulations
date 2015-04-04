@@ -87,13 +87,13 @@ class MIAnalysis
         float fTRotationAngle;
 
 
-        float *fTPt;
-        double *fTEta;
-        double *fTPhi;
-        float *fTIntensity;
-        float *fTRotatedIntensity;
-        int  *fTPixx;
-        int  *fTPixy; 
+        vector<float> fTPt;
+        vector<double> fTEta;
+        vector<double> fTPhi;
+        vector<float> fTIntensity;
+        vector<float> fTRotatedIntensity;
+        vector<int>  fTPixx;
+        vector<int>  fTPixy; 
 
         // float fTPt [MaxN];
         // double fTEta [MaxN];

@@ -30,13 +30,14 @@ using namespace std;
 // Constructor 
 MIAnalysis::MIAnalysis(int imagesize)
 {
-    fTPt = new float[imagesize];
-    fTEta = new double[imagesize];
-    fTPhi = new double[imagesize];
-    fTIntensity = new float[imagesize];
-    fTRotatedIntensity = new float[imagesize];
-    fTPixx = new int[imagesize];
-    fTPixy = new int[imagesize]; 
+    imagesize *= imagesize;
+    fTPt.resize(imagesize);
+    fTEta.resize(imagesize);
+    fTPhi.resize(imagesize);
+    fTIntensity.resize(imagesize);
+    fTRotatedIntensity.resize(imagesize);
+    fTPixx.resize(imagesize);
+    fTPixy.resize(imagesize); 
 
 
     if(fDebug) cout << "MIAnalysis::MIAnalysis Start " << endl;
@@ -63,14 +64,6 @@ MIAnalysis::MIAnalysis(int imagesize)
 MIAnalysis::~MIAnalysis()
 {
     delete tool;
-
-    delete[] fTPt;
-    delete[] fTEta;
-    delete[] fTPhi;
-    delete[] fTIntensity;
-    delete[] fTRotatedIntensity;
-    delete[] fTPixx;
-    delete[] fTPixy;
 }
 
 // Begin method
@@ -302,16 +295,16 @@ void MIAnalysis::DeclareBranches()
     // Event Properties 
     tT->Branch("NFilled", &fTNFilled, "NFilled/I");
 
-    tT->Branch("Intensity", *&fTIntensity, "Intensity[NFilled]/F");
+    tT->Branch("Intensity", &fTIntensity, "Intensity[NFilled]/F");
 
     tT->Branch("RotatedIntensity", 
-        *&fTRotatedIntensity, "RotatedIntensity[NFilled]/F");
+        &fTRotatedIntensity, "RotatedIntensity[NFilled]/F");
 
     tT->Branch("SubLeadingEta", &fTSubLeadingEta, "SubLeadingEta/F");
     tT->Branch("SubLeadingPhi", &fTSubLeadingPhi, "SubLeadingPhi/F");
 
-    tT->Branch("Pixx", *&fTPixx, "Pixx[NFilled]/I");
-    tT->Branch("Pixy", *&fTPixy, "Pixy[NFilled]/I");
+    tT->Branch("Pixx", &fTPixx, "Pixx[NFilled]/I");
+    tT->Branch("Pixy", &fTPixy, "Pixy[NFilled]/I");
     // tT->Branch("Pixy", &fTPixy, "Pixy[NFilled]/I");
 
     tT->Branch("LeadingEta", &fTLeadingEta, "LeadingEta/F");
@@ -320,8 +313,8 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
 
 
-    tT->Branch("CellEta", *&fTEta, "CellEta[NFilled]/D");
-    tT->Branch("CellPhi", *&fTPhi, "CellPhi[NFilled]/D");
+    tT->Branch("CellEta", &fTEta, "CellEta[NFilled]/D");
+    tT->Branch("CellPhi", &fTPhi, "CellPhi[NFilled]/D");
 
     return;
 }
