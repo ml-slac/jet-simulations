@@ -1,5 +1,5 @@
 # Makefile for Jet Images
-# Author: Luke de Oliveira (lukedeo@ldo.io)
+# Author: Luke de Oliveira (luke.deoliveira@yale.edu)
 
 # --- set directories
 BIN          := bin
@@ -9,53 +9,84 @@ LIB          := $(CURDIR)/lib
 
 #  set search path
 vpath %.o    $(BIN)
-vpath %.cxx  $(SRC) 
-vpath %.hh   $(INC) 
+vpath %.cc  $(SRC) 
+vpath %.h   $(INC) 
 
 # --- set compiler and flags
 
 CXX          ?= g++
 CXXFLAGS     := -Wall -fPIC -I$(INC) -g -std=c++11 
-LIBRARY      := $(LIB)/libdataframe.a
+# LIBRARY      := $(LIB)/libdataframe.a
 
 ifeq ($(CXX),clang++)
 CXXFLAGS += -stdlib=libc++
 endif
 
-# ---- define objects
+# --- HEP flags
 
-FRAME_OBJ    := csv_reader.o dataframe.o 
+FASTJETFLAGS := $(shell fastjet-config --cxxflags --plugins)
+FASTJETLDFLAGS =
+FASTJETLIBS = $(shell fastjet-config --libs --plugins)
 
-# - command line interface
+ROOTFLAGS    := $(shell root-config --cflags)
+ROOTLDFLAGS   := $(shell root-config --ldflags)
+ROOTLIBS     := $(shell root-config --glibs)
 
-EXE_OBJ      := dataframe_test.o
+PYTHIAFLAGS  := $(shell pythia8-config --cxxflags)
+PYTHIALDFLAGS:= $(shell pythia8-config --ldflags)
+PYTHIALIBS = $(shell pythia8-config --libs)
 
-# EXECUTABLE   := test
+#HEPLIBS := -lSubjetJVF -lVertexJets 
+HEPLIBS += $(FASTJETLIBS)
+HEPLIBS += $(ROOTLIBS)
+HEPLIBS += $(PYTHIALIBS)
 
-LIB_OBJ      := $(FRAME_OBJ)
-ALLOBJ       := $(FRAME_OBJ)
-ALLOUTPUT    := $(EXECUTABLE)
+
+# --- Add HEP flags to common stuff
+
+CXXFLAGS += $(ROOTFLAGS)
+CXXFLAGS += $(FASTJETFLAGS)
+CXXFLAGS += $(PYTHIAFLAGS)
+
+LIBS     += $(HEPLIBS)
+
+LDFLAGS  = $(ROOTLDFLAGS) $(PYTHIALDFLAGS) $(FASTJETLDFLAGS)
 
 
-all: $(LIBRARY) $(EXECUTABLE)
-	@echo "libdataframe.a build sucessful."
+# -- Boost Flags
 
-$(EXECUTABLE): $(LIB_OBJ:%=$(BIN)/%) $(EXE_OBJ:%=$(BIN)/%)
+BOOSTINCDIR = /usr/local/include
+BOOSTLIBLOCATION = /usr/local/lib
+
+CXXFLAGS += -I$(BOOSTINCDIR)
+LIBS += -L$(BOOSTLIBLOCATION) -lboost_program_options 
+
+# -- building excecutable
+
+OBJ := MI.o MIAnalysis.o MITools.o
+
+EXECUTABLE   := MI
+
+
+all: $(EXECUTABLE)
+	@echo "jet-images build sucessful."
+
+$(EXECUTABLE): $(OBJ:%=$(BIN)/%)
 	@echo "linking $^ --> $@"
-	@$(CXX) -o $@ $^ $(LIBS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS) 
 
-$(LIBRARY): $(LIB_OBJ:%=$(BIN)/%)
-	@mkdir -p $(LIB)
-	@echo "linking objects to --> $@"
-	@ar rc $@ $^ && ranlib $@
+# $(LIBRARY): $(LIB_OBJ:%=$(BIN)/%)
+# 	@mkdir -p $(LIB)
+# 	@echo "linking objects to --> $@"
+# 	@ar rc $@ $^ && ranlib $@
 
 # --------------------------------------------------
 
 # compile rule
-$(BIN)/%.o: %.cxx
+$(BIN)/%.o: %.cc
 	@echo compiling $<
 	@mkdir -p $(BIN)
-	@$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(CXXFLAGS) $< -o $@
 
 # use auto dependency generation
 DEP = $(BIN)
