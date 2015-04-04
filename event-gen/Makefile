@@ -95,7 +95,7 @@ endif
 endif
 
 DEPTARGSTR = -MT $(BIN)/$*.o -MT $(DEP)/$*.d
-$(DEP)/%.d: %.cxx
+$(DEP)/%.d: %.cc
 	@echo making dependencies for $<
 	@mkdir -p $(DEP)
 	@$(CXX) -MM -MP $(DEPTARGSTR) $(CXXFLAGS) $< -o $@ 
