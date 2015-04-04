@@ -12,8 +12,8 @@ LIB          := $(CURDIR)/lib
 
 # --- set search path
 vpath %.o    $(BIN)
-vpath %.cc  $(SRC) 
-vpath %.h   $(INC) 
+vpath %.cc   $(SRC) 
+vpath %.h    $(INC) 
 
 # --- set compiler and flags
 
@@ -25,17 +25,17 @@ CXXFLAGS += -stdlib=libc++
 endif
 
 # --- HEP flags
-FASTJETFLAGS := $(shell fastjet-config --cxxflags --plugins)
-FASTJETLDFLAGS =
-FASTJETLIBS = $(shell fastjet-config --libs --plugins)
+FASTJETFLAGS   := $(shell fastjet-config --cxxflags --plugins)
+FASTJETLDFLAGS  =
+FASTJETLIBS     = $(shell fastjet-config --libs --plugins)
 
-ROOTFLAGS    := $(shell root-config --cflags)
-ROOTLDFLAGS   := $(shell root-config --ldflags)
-ROOTLIBS     := $(shell root-config --glibs)
+ROOTFLAGS      := $(shell root-config --cflags)
+ROOTLDFLAGS    := $(shell root-config --ldflags)
+ROOTLIBS       := $(shell root-config --glibs)
 
-PYTHIAFLAGS  := $(shell pythia8-config --cxxflags)
-PYTHIALDFLAGS:= $(shell pythia8-config --ldflags)
-PYTHIALIBS = $(shell pythia8-config --libs)
+PYTHIAFLAGS    := $(shell pythia8-config --cxxflags)
+PYTHIALDFLAGS  := $(shell pythia8-config --ldflags)
+PYTHIALIBS      = $(shell pythia8-config --libs)
 
 HEPLIBS += $(FASTJETLIBS)
 HEPLIBS += $(ROOTLIBS)
@@ -49,21 +49,21 @@ CXXFLAGS += $(PYTHIAFLAGS)
 
 LIBS     += $(HEPLIBS)
 
-LDFLAGS  = $(ROOTLDFLAGS) $(PYTHIALDFLAGS) $(FASTJETLDFLAGS)
+LDFLAGS   = $(ROOTLDFLAGS) $(PYTHIALDFLAGS) $(FASTJETLDFLAGS)
 
 
 # -- Boost Flags
-BOOSTINCDIR = /usr/local/include
+BOOSTINCDIR      = /usr/local/include
 BOOSTLIBLOCATION = /usr/local/lib
 
 CXXFLAGS += -I$(BOOSTINCDIR)
-LIBS += -L$(BOOSTLIBLOCATION) -lboost_program_options 
+LIBS     += -L$(BOOSTLIBLOCATION) -lboost_program_options 
 
 
 # --- building excecutable
 OBJ := MI.o MIAnalysis.o MITools.o
 
-EXECUTABLE   := event-gen
+EXECUTABLE := event-gen
 
 
 all: $(EXECUTABLE)
