@@ -61,10 +61,13 @@ def plot_mean_jet(rec, field = 'image', title = 'Average Jet Image'):
     return fig
 
 
-def plot_jet(rec, title = 'Jet Image'):
+def plot_jet(rec, title = 'Jet Image', log=True):
     fig = plt.figure(figsize=(8, 8), dpi=100)
     ax = fig.add_subplot(111)
-    im = ax.imshow(rec,  norm=LogNorm(vmin=0.00001, vmax=1), interpolation='nearest')
+    if log:
+        im = ax.imshow(rec,  norm=LogNorm(vmin=0.00001, vmax=1), interpolation='nearest')
+    else:
+        im = ax.imshow(rec, interpolation='nearest')
     plt.title(r''+title)
     return fig
     
