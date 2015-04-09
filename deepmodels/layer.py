@@ -5,6 +5,20 @@ import numpy as np
 from .activation import *
 from .cost import ConstantLearningSchedule, LinearLearningSchedule, GeometricLearningSchedule
 
+
+USE_GPU = False
+
+
+if USE_GPU:
+	from gnumpy import garray as array
+	from gnumpy import as_garray as asarray
+	from gnumpy import dot as dotproduct
+else:
+	from numpy import array as array
+	from numpy import asarray as asarray
+	from numpy import dot as dotproduct
+
+
 class Layer(object):
 	"""
 	simple building block for constructing more complicated layer types
@@ -24,31 +38,45 @@ class Layer(object):
 		self.l2_reg = l2_reg
  
 		# -- weight stuff
-		self.W = 0.1 * np.random.normal(0, 1, (self.outputs, self.inputs))  #/ np.sqrt(outputs + inputs)
-		self.b = 0.1 * np.random.normal(0, 1, (self.outputs, 1))  #/ np.sqrt(outputs + inputs)
+		self.W = asarray(0.1 * np.random.normal(0, 1, (self.outputs, self.inputs)))  #/ np.sqrt(outputs + inputs)
+		self.b = asarray(0.1 * np.random.normal(0, 1, (self.outputs, 1))) #/ np.sqrt(outputs + inputs)
 
 		# -- store previous weights
-		self._W = np.zeros((self.outputs, self.inputs))
-		self._b = np.zeros((self.outputs, 1))
+		self._W = asarray(np.zeros((self.outputs, self.inputs)))
+		self._b = asarray(np.zeros((self.outputs, 1)))
 
 		# -- store weight gradient
-		self._grad_W = np.zeros((self.outputs, self.inputs))
-		self._grad_b = np.zeros((self.outputs, 1))
+		self._grad_W = asarray(np.zeros((self.outputs, self.inputs)))
+		self._grad_b = asarray(np.zeros((self.outputs, 1)))
 
 
 	def predict(self, X):
-		self.X = X.T
-
+		if USE_GPU:
+			self.X = asarray(X.T)
+		else:
+			self.X = X.T
 		# -- Z = s(W * x + b)
-		self.Z = self.activ(np.dot(self.W, self.X) + self.b)
+		if USE_GPU:
+			if self.activ is sigmoid:
+				self.Z = (dotproduct(self.W, self.X) + self.b).logistic()
+			elif self.activ is identity:
+				self.Z = dotproduct(self.W, self.X) + self.b
+		else:
+			self.Z = self.activ(dotproduct(self.W, self.X) + self.b)
 		return self.Z.T
 
 	def calculate_derivatives(self, err):
 		# -- calculate and store the derivatives and the values to pass down
-		self.delta = np.multiply(err.T, derivative[self.activ](self.Z))
-		self._grad_W = np.dot(self.delta, self.X.T) / err.shape[0] + self.l2_reg * self.W
+		if USE_GPU:
+			if self.activ is sigmoid:
+				self.delta = err.T * self.Z * (1 - self.Z)
+			elif self.activ is identity:
+				self.delta = err.T
+		else:
+			self.delta = np.multiply(err.T, derivative[self.activ](self.Z))
+		self._grad_W = dotproduct(self.delta, self.X.T) / err.shape[0] + self.l2_reg * self.W
 		self._grad_b = (self.delta.sum(axis = 1) / err.shape[0]).reshape(self.b.shape)
-		self._dump = np.dot(self.W.T, self.delta)
+		self._dump = dotproduct(self.W.T, self.delta)
 
 
 	def backpropagate(self, err):
