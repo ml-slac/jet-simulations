@@ -80,11 +80,16 @@ class MIAnalysis
         float fTLeadingEta;
         float fTLeadingPhi;
         float fTLeadingPt;
+        float fTLeadingM;
         
         float fTSubLeadingEta;
         float fTSubLeadingPhi;
 
         float fTRotationAngle;
+
+        float fTTau1;
+        float fTTau2;
+        float fTTau3;
 
 
         float *fTIntensity;

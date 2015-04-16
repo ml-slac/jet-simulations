@@ -25,6 +25,8 @@
 
 #include "Pythia8/Pythia.h"
 
+#include "Nsubjettiness.h"
+
 using namespace std;
 
 // Constructor 
@@ -134,7 +136,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
       
     }  
     // end particle loop -----------------------------------------------  
-    
+
     //Now, we extract the energy from the calorimeter for processing by fastjet
     for (int i = 1; i <= detector->GetNbinsX(); i++)
     {
@@ -162,12 +164,12 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
 
     fastjet::ClusterSequence csLargeR(particlesForJets, *m_jet_def);
 
-    vector<fastjet::PseudoJet> myJets = fastjet::sorted_by_pt(
+    vector<fastjet::PseudoJet> considered_jets = fastjet::sorted_by_pt(
         csLargeR.inclusive_jets(10.0));
-    fastjet::PseudoJet myJet = trimmer(myJets[0]);
+    fastjet::PseudoJet leading_jet = trimmer(considered_jets[0]);
 
     //Now, let's make an image out of the leading jet. 
-    vector<fastjet::PseudoJet> subjets = sorted_by_pt(myJet.pieces());
+    vector<fastjet::PseudoJet> subjets = sorted_by_pt(leading_jet.pieces());
 
     if (subjets.size() < 2)
     {
@@ -178,6 +180,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     fTLeadingEta = subjets[0].eta();
     fTLeadingPhi = subjets[0].phi();
     fTLeadingPt = subjets[0].perp();
+    fTLeadingM = subjets[0].m();
     
     vector<pair<double, double>  > consts_image;
     vector<pair<double, double>  > subjets_image; 
@@ -190,7 +193,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         subjets_image.push_back(subjet_hold);
     }
     
-    vector<fastjet::PseudoJet> sorted_consts = sorted_by_pt(myJet.constituents());
+    vector<fastjet::PseudoJet> sorted_consts = sorted_by_pt(leading_jet.constituents());
 
     for(int i = 0; i < sorted_consts.size(); i++)
     {
@@ -264,7 +267,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
       //std::cout << i << "       " << consts_image[i].first  << " " << consts_image[i].second << std::endl;  
     }
 
-    //Step 5: Dump in the tree!
+    //Step 5: Dump the images in the tree!
     //-------------------------------------------------------------------------
     int counter=0;
     for (int i=1; i<=rotatedimage->GetNbinsX(); i++)
@@ -277,6 +280,15 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
             counter++;
         }
     }
+
+    // Step 6: Fill in nsubjettiness
+    //----------------------------------------------------------------------------
+    NsubParameters myNsubParam(1.0, 1.0);
+    Njettiness* NJetCalc = new Njettiness(Njettiness::onepass_kt_axes, myNsubParam);
+    vector<fastjet::PseudoJet> particles_njet = leading_jet.constituents();
+    fTTau1 = NJetCalc->getTau(1, particles_njet);
+    fTTau2 = NJetCalc->getTau(2, particles_njet);
+    fTTau3 = NJetCalc->getTau(3, particles_njet);
 
     tT->Fill();
 
@@ -298,14 +310,15 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("SubLeadingEta", &fTSubLeadingEta, "SubLeadingEta/F");
     tT->Branch("SubLeadingPhi", &fTSubLeadingPhi, "SubLeadingPhi/F");
 
-
     tT->Branch("LeadingEta", &fTLeadingEta, "LeadingEta/F");
     tT->Branch("LeadingPhi", &fTLeadingPhi, "LeadingPhi/F");
     tT->Branch("LeadingPt", &fTLeadingPt, "LeadingPt/F");
+    tT->Branch("LeadingM", &fTLeadingM, "LeadingM/F");
     tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
 
-
-
+    tT->Branch("Tau1", &fTTau1, "Tau1/F");
+    tT->Branch("Tau2", &fTTau2, "Tau2/F");
+    tT->Branch("Tau3", &fTTau3, "Tau3/F");
     return;
 }
 
@@ -317,11 +330,14 @@ void MIAnalysis::ResetBranches(){
     fTSubLeadingEta = -999;
     fTRotationAngle = -999;
 
+    fTTau1 = -999;
+    fTTau2 = -999;
+    fTTau3 = -999;
 
-    
     fTLeadingEta = -999;
     fTLeadingPhi = -999;
     fTLeadingPt = -999;
+    fTLeadingM = -999;
 
     for (int iP=0; iP < MaxN; ++iP)
     {
