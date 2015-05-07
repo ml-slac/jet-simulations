@@ -10,6 +10,8 @@ SRC          := src
 INC          := include
 LIB          := $(CURDIR)/lib
 
+NSUBDIR      := Nsubjettiness
+
 # --- set search path
 vpath %.o    $(BIN)
 vpath %.cc   $(SRC) 
@@ -18,7 +20,7 @@ vpath %.h    $(INC)
 # --- set compiler and flags
 
 CXX          ?= g++
-CXXFLAGS     := -Wall -fPIC -I$(INC) -g -std=c++11 
+CXXFLAGS     := -Wall -fPIC -I$(INC) -I$(NSUBDIR) -g -std=c++11 
 
 ifeq ($(CXX),clang++)
 CXXFLAGS += -stdlib=libc++
@@ -37,9 +39,17 @@ PYTHIAFLAGS    := $(shell pythia8-config --cxxflags)
 PYTHIALDFLAGS  := $(shell pythia8-config --ldflags)
 PYTHIALIBS      = $(shell pythia8-config --libs)
 
+
 HEPLIBS += $(FASTJETLIBS)
+
+# --- For n-subjettiness calculation
+# HEPLIBS += -lNsubjettiness
+
 HEPLIBS += $(ROOTLIBS)
 HEPLIBS += $(PYTHIALIBS)
+
+
+
 
 
 # --- Add HEP flags to common stuff
@@ -71,7 +81,7 @@ all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJ:%=$(BIN)/%)
 	@echo "linking $^ --> $@"
-	@$(CXX) -o $@ $^ $(LDFLAGS) $(LIBS) 
+	@$(CXX) -o $@ $^ $(shell find ./Nsubjettiness/ | grep "\.o")  $(LDFLAGS) $(LIBS)
 
 
 # --- auto dependency generation for build --- #
