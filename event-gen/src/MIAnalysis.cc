@@ -25,9 +25,14 @@
 
 #include "Pythia8/Pythia.h"
 
-#include "Nsubjettiness.h"
+// #include "Nsubjettiness.h"
+#include "Njettiness.hh"
+#include "Nsubjettiness.hh"
+
 
 using namespace std;
+using namespace fastjet;
+using namespace fastjet::contrib;
 
 // Constructor 
 MIAnalysis::MIAnalysis(int imagesize)
@@ -256,7 +261,6 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     }
 
     theta = atan(subjets_image[1].second/subjets_image[1].first);
-    //std::cout << "check the angle " << subjets_image[1].first << " " << subjets_image[1].second << " " << theta << std::endl; //this angle should be at -pi/2!
 
     //Step 4: fill in the rotated image
     //-------------------------------------------------------------------------
@@ -283,12 +287,35 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
 
     // Step 6: Fill in nsubjettiness
     //----------------------------------------------------------------------------
-    NsubParameters myNsubParam(1.0, 1.0);
-    Njettiness* NJetCalc = new Njettiness(Njettiness::onepass_kt_axes, myNsubParam);
-    vector<fastjet::PseudoJet> particles_njet = leading_jet.constituents();
-    fTTau1 = NJetCalc->getTau(1, particles_njet);
-    fTTau2 = NJetCalc->getTau(2, particles_njet);
-    fTTau3 = NJetCalc->getTau(3, particles_njet);
+    // NsubParameters myNsubParam(1.0, 1.0);
+    // NsubParameters paraNsub(beta, R0, Rcutoff);
+
+    Nsubjettiness nSub1KT(1, Njettiness::kt_axes, 1, 1, 1);
+    double tau1 = nSub1KT(subjets[0]);
+
+    Nsubjettiness nSub2KT(2, Njettiness::kt_axes, 1, 1, 1);
+    double tau2 = nSub2KT(subjets[0]);
+
+    Nsubjettiness nSub3KT(3, Njettiness::kt_axes, 1, 1, 1);
+    double tau3 = nSub3KT(subjets[0]);
+
+    fTTau1 = tau1;
+    fTTau2 = tau2;
+    fTTau3 = tau3;
+
+
+    // OnePass_KT_Axes axis_spec;
+
+    // NormalizedMeasure parameters(1.0, 1.0);
+    // Nsubjettiness subjettiness_1(1, axis_spec, parameters);
+    // Nsubjettiness subjettiness_2(2, axis_spec, parameters);
+    // Nsubjettiness subjettiness_3(3, axis_spec, parameters);
+
+    // // vector<fastjet::PseudoJet> particles_njet = leading_jet.constituents();
+
+    // fTTau1 = (float) subjettiness_1.result(leading_jet);
+    // fTTau2 = (float) subjettiness_2.result(leading_jet);
+    // fTTau3 = (float) subjettiness_3.result(leading_jet);
 
     tT->Fill();
 
