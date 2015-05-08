@@ -63,11 +63,11 @@ LDFLAGS   = $(ROOTLDFLAGS) $(PYTHIALDFLAGS) $(FASTJETLDFLAGS)
 
 
 # -- Boost Flags
-BOOSTINCDIR      = /usr/local/include
-BOOSTLIBLOCATION = /usr/local/lib
+# BOOSTINCDIR      = /usr/local/include
+# BOOSTLIBLOCATION = /usr/local/lib
 
-CXXFLAGS += -I$(BOOSTINCDIR)
-LIBS     += -L$(BOOSTLIBLOCATION) -lboost_program_options 
+# CXXFLAGS += -I$(BOOSTINCDIR)
+# LIBS     += -L$(BOOSTLIBLOCATION) -lboost_program_options 
 
 
 # --- building excecutable

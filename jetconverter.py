@@ -38,7 +38,8 @@ def buffer_to_jet(entry, tag = 0, side = 'r', max_entry = 2000, pix = 25):
     """
 
     image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle'], normalizer=max_entry, dim=pix), side)
-    return (image / np.linalg.norm(image), tag, entry['LeadingPt'], entry['LeadingEta'], entry['LeadingPhi'])
+    return (image / np.linalg.norm(image), tag, 
+        entry['LeadingPt'], entry['LeadingEta'], entry['LeadingPhi'], entry['LeadingM'], entry['Tau32'], entry['Tau21'])
 
 
 def is_signal(f, matcher = 'Wprime'):
@@ -123,7 +124,10 @@ if __name__ == '__main__':
              ('signal', float),
              ('jet_pt', float),
              ('jet_eta', float),
-             ('jet_phi', float)]
+             ('jet_phi', float), 
+             ('jet_mass', float),
+             ('tau_32', float), 
+             ('tau_21', float)]
 
     df = np.array(entries, dtype=_bufdtype)
     np.save(savefile, df)
