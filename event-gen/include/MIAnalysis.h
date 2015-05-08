@@ -91,6 +91,9 @@ class MIAnalysis
         float fTTau2;
         float fTTau3;
 
+        float fTTau21;
+        float fTTau32;
+
 
         float *fTIntensity;
         float *fTRotatedIntensity;

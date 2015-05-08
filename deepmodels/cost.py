@@ -21,7 +21,7 @@ class SquaredErrorCost(BaseCost):
 		self.fraction = fraction
 	
 	def cost(self, predicted, target):
-		return self.fraction * np.sum(predicted - target)
+		return self.fraction * np.sum((predicted - target.reshape(predicted.shape))**2)
 
 	def cost_derivative(self, predicted, target):
 		return 2 * self.fraction * (predicted - target.reshape(predicted.shape))
@@ -32,7 +32,7 @@ class CrossEntropyCost(BaseCost):
 		super(CrossEntropyCost, self).__init__()
 	
 	def cost(self, predicted, target):
-		return -np.sum(np.multiply(target, np.log(predicted)) + np.multiply((1 - target), np.log(1 - predicted)))
+		return -np.sum(np.multiply(target.reshape(predicted.shape), np.log(predicted)) + np.multiply((1 - target.reshape(predicted.shape)), np.log(1 - predicted)))
 
 	def cost_derivative(self, predicted, target):
 		E = predicted - target.reshape(predicted.shape)
