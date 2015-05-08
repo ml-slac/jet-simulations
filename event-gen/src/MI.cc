@@ -24,7 +24,11 @@
 #include "MITools.h"
 #include "MIAnalysis.h"
 
-#include "boost/program_options.hpp"
+// #include "boost/program_options.hpp"
+
+#include "parser.hh"
+
+
 
 
 using std::cout;
@@ -32,7 +36,6 @@ using std::endl;
 using std::string;
 using std::map;
 using namespace std;
-namespace po = boost::program_options;
 
 int getSeed(int seed)
 {                                                                                                                                                                                                                                              
@@ -44,7 +47,7 @@ int getSeed(int seed)
     return abs(((timeSeed*181)*((getpid()-83)*359))%104729);                                                                                                                                                                                                           
 }  
 
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
     // argument parsing  ------------------------
     cout << "Called as: ";
@@ -68,30 +71,33 @@ int main(int argc, char* argv[])
     int    proc        = 1;
     int    seed        = -1;
 
-    po::options_description desc("Allowed options");
-    desc.add_options()
-        ("help", "produce help message")
-        ("NEvents",   po::value<int>(&nEvents)->default_value(10) ,    "Number of Events ")
-        ("Pixels",    po::value<int>(&pixels)->default_value(25) ,    "Number of pixels per dimension ")
-        ("Range",     po::value<float>(&image_range)->default_value(1) , "Image captures [-w, w] x [-w, w], where w is the value passed.")
-        ("Debug",     po::value<int>(&fDebug) ->default_value(0) ,     "Debug flag")
-        ("Pileup",    po::value<int>(&pileup)->default_value(0), "Number of Additional Interactions")
-        ("OutFile",   po::value<string>(&outName)->default_value("test.root"), "output file name")
-        ("Proc",      po::value<int>(&proc)->default_value(2), "Process: 1=ZprimeTottbar, 2=WprimeToWZ_lept, 3=WprimeToWZ_had, 4=QCD")
-        ("Seed",      po::value<int>(&seed)->default_value(-1), "seed. -1 means random seed")
-        ("pThatMin",  po::value<float>(&pThatmin)->default_value(100), "pThatMin for QCD")
-        ("pThatMax",  po::value<float>(&pThatmax)->default_value(500), "pThatMax for QCD")
-        ("BosonMass", po::value<float>(&boson_mass)->default_value(800), "Z' or W' mass in GeV");
+    optionparser::parser parser("Allowed options");
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    parser.add_option("--NEvents").mode(optionparser::store_value).default_value(10).help("Number of Events");
+    parser.add_option("--Pixels").mode(optionparser::store_value).default_value(25).help("Number of pixels per dimension");
+    parser.add_option("--Range").mode(optionparser::store_value).default_value(1).help("Image captures [-w, w] x [-w, w], where w is the value passed.");
+    parser.add_option("--Debug").mode(optionparser::store_value).default_value(0).help("Debug flag");
+    parser.add_option("--Pileup").mode(optionparser::store_value).default_value(0).help("Number of Additional Interactions");
+    parser.add_option("--OutFile").mode(optionparser::store_value).default_value("test.root").help("output file name");
+    parser.add_option("--Proc").mode(optionparser::store_value).default_value(2).help("Process: 1=ZprimeTottbar, 2=WprimeToWZ_lept, 3=WprimeToWZ_had, 4=QCD");
+    parser.add_option("--Seed").mode(optionparser::store_value).default_value(-1).help("seed. -1 means random seed");
+    parser.add_option("--pThatMin").mode(optionparser::store_value).default_value(100).help("pThatMin for QCD");
+    parser.add_option("--pThatMax").mode(optionparser::store_value).default_value(500).help("pThatMax for QCD");
+    parser.add_option("--BosonMass").mode(optionparser::store_value).default_value(800).help("Z' or W' mass in GeV");
 
-    if (vm.count("help") > 0)
-    {
-        cout << desc << "\n";
-        return 1;
-    }
+    parser.eat_arguments(argc, argv);
+
+    nEvents = parser.get_value<int>("NEvents");
+    pixels = parser.get_value<int>("Pixels");
+    image_range = parser.get_value<float>("Range");
+    fDebug = parser.get_value<int>("Debug");
+    pileup = parser.get_value<int>("Pileup");
+    outName = parser.get_value<string>("OutFile");
+    proc = parser.get_value<int>("Proc");
+    seed = parser.get_value<int>("Seed");
+    pThatmin = parser.get_value<float>("pThatMin");
+    pThatmax = parser.get_value<float>("pThatMax");
+    boson_mass = parser.get_value<float>("BosonMass");
 
 
     //seed 
