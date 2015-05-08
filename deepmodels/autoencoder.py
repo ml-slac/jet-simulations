@@ -4,6 +4,8 @@ from .cost import BaseCost, SquaredErrorCost, CrossEntropyCost
 
 import numpy as np
 import sys
+from distutils.dir_util import mkpath
+import pickle
 
 
 class Autoencoder(object):
@@ -117,6 +119,45 @@ class DenoisingAutoencoder(Autoencoder):
 	def __init__(self, n_visible, n_hidden, activ = (sigmoid, identity), cost=SquaredErrorCost(), noise=NormalNoise(), **kwargs):
 		super(DenoisingAutoencoder, self).__init__(n_visible, n_hidden, activ, cost, **kwargs)
 		self.noise = noise
+
+
+	@classmethod
+	def fromfile(cls, fname):
+		L = cls(1, 1)
+		L.load(fname)
+		return L
+
+	def save(self, fname, compress = True):
+		if not os.path.splitext(fname)[1] == '.lyr':
+			fname = fname + '.lyr'
+		os.makedirs(fname)
+		for f in ['params']:
+			os.makedirs(os.path.join(fname, f))
+
+		for _layer in ['encoder', 'decoder']:
+			getattr(self, _layer).save(os.path.join(fname, _layer), compress)
+			
+		# -- save parameters (include activation functions!)
+		_par_dict = {}
+		
+		for p in ['n_visible', 'n_hidden', 'activ', 'errors', 'cost', 'noise']:
+			_par_dict[p] = getattr(self, p)
+
+		with open(os.path.join(fname, 'params', 'params.pkl'), 'wb') as f:
+			if compress:
+				pickle.dump(_par_dict, f, pickle.HIGHEST_PROTOCOL)
+			else:
+				pickle.dump(_par_dict, f, pickle.HIGHEST_PROTOCOL)
+		return self
+
+	def load(self, fname):
+		_par_dict = pickle.load(open(os.path.join(fname, 'params', 'params.pkl'), 'rb'))
+		for p, v in _par_dict.iteritems():
+			setattr(self, p, v)
+
+		for _layer in ['encoder', 'decoder']:
+			setattr(self, _layer, Layer.fromfile(os.path.join(fname, _layer) + '.lyr'))
+
 
 	def noisy_reconstruct(self, X):
 		return self.decoder.predict(self.encoder.predict(self.noise.corrupt(X)))

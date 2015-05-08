@@ -5,6 +5,13 @@ import numpy as np
 from .activation import *
 from .cost import ConstantLearningSchedule, LinearLearningSchedule, GeometricLearningSchedule
 
+import deepdish.io as io
+from distutils.dir_util import mkpath
+import sys
+import os
+
+import pickle
+
 class Layer(object):
 	"""
 	simple building block for constructing more complicated layer types
@@ -34,6 +41,67 @@ class Layer(object):
 		# -- store weight gradient
 		self._grad_W = np.zeros((self.outputs, self.inputs))
 		self._grad_b = np.zeros((self.outputs, 1))
+
+	@classmethod
+	def fromfile(cls, fname):
+		L = cls()
+		L.load(fname)
+		return L
+
+	def save(self, fname, compress = True):
+		if not os.path.splitext(fname)[1] == '.lyr':
+			fname = fname + '.lyr'
+
+		os.makedirs(fname)
+		for sect in ['params', 'weights', 'prev_weights']:
+			# mkpath(os.path.join(fname, sect))
+			os.makedirs(os.path.join(fname, sect))
+
+		# -- save weights
+		for w in ['W', 'b']:
+			io.save(os.path.join(fname, 'weights', w + '.h5'), getattr(self, w), compress)
+
+
+		# -- save prev weights
+		for w in ['_W', '_b']:
+			io.save(os.path.join(fname, 'prev_weights', w + '.h5'), getattr(self, w), compress)
+
+		# -- save parameters (include activation functions!)
+		_par_dict = {}
+
+		for p in ['inputs', 'outputs', 'activ', 'learning', 'momentum', 'l2_reg']:
+			_par_dict[p] = getattr(self, p)
+
+		with open(os.path.join(fname, 'params', 'params.pkl'), 'wb') as f:
+			if compress:
+				pickle.dump(_par_dict, f, pickle.HIGHEST_PROTOCOL)
+			else:
+				pickle.dump(_par_dict, f, pickle.HIGHEST_PROTOCOL)
+		return self
+
+	def load(self, fname):
+		# -- set parameters
+		_par_dict = pickle.load(open(os.path.join(fname, 'params', 'params.pkl'), 'rb'))
+		for p in ['inputs', 'outputs', 'activ', 'learning', 'momentum', 'l2_reg']:
+			setattr(self, p, _par_dict[p])
+
+
+		# -- load weights
+		for w in ['W', 'b']:
+			setattr(self, w, io.load(os.path.join(fname, 'weights', w + '.h5')))
+
+
+		# -- load prev weights
+		for w in ['_W', '_b']:
+			setattr(self, w, io.load(os.path.join(fname, 'prev_weights', w + '.h5')))
+		return self
+		
+
+
+
+
+
+
 
 
 	def predict(self, X):
