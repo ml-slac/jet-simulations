@@ -97,13 +97,6 @@ class Layer(object):
 		return self
 		
 
-
-
-
-
-
-
-
 	def predict(self, X):
 		self.X = X.T
 
