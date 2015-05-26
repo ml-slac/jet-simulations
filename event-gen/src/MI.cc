@@ -153,6 +153,7 @@ int main(int argc, const char* argv[])
     }
     else if(proc == 4)
     { 
+        std::cout << "pT Hat Max = " << pThatmax <<std::endl;
         pythia8->readString("HardQCD:all = on");
         std::stringstream ptHatMin;
         std::stringstream ptHatMax;

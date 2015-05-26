@@ -49,11 +49,29 @@ class Layer(object):
 		return L
 
 	def save(self, fname, compress = True):
+
 		if not os.path.splitext(fname)[1] == '.lyr':
 			fname = fname + '.lyr'
 
+		# if not os.path.splitext(fname)[1] == '.h5':
+		# 	fname = fname + '.h5'
+		# parlist = ['W', 
+		# 		   '_W', 
+		# 		   'b', 
+		# 		   '_b', 
+		# 		   'inputs', 
+		# 		   'outputs', 
+		# 		   'activ', 
+		# 		   'learning', 
+		# 		   'momentum', 
+		# 		   'l2_reg']
+
+
+		# storage = {p : getattr(self, p) for p in parlist}
+		# io.save(os.path.join(fname, 'prev_weights', w + '.h5'), getattr(self, w), compress)
+
 		os.makedirs(fname)
-		for sect in ['params', 'weights', 'prev_weights']:
+		for sect in ['params', 'weights', 'prev_weights', 'inputs', 'outputs', 'activ', 'learning', 'momentum', 'l2_reg']:
 			# mkpath(os.path.join(fname, sect))
 			os.makedirs(os.path.join(fname, sect))
 

@@ -80,6 +80,7 @@ def generate_calls(n_events, n_cpus=-1, outfile='gen.root', process='WprimeToWZ_
 				 '--pThatMin', str(pt_hat_min), 
 				 '--pThatMax', str(pt_hat_max),
 				 '--BosonMass', str(bosonmass)]
+		print _call
 		return _call
 
 	return [_generate_call(c) for c in events_per_core]
