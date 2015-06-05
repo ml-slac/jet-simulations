@@ -49,7 +49,7 @@ This will generate files `events_cpuN.root` for `N = 1, ..., N_cpus`.
 Image processing is handled in the parent directory. 
 
 
-```bash
+```
 me@mycomputer$ python jetconverter.py --help
 usage: jetconverter.py [-h] [--verbose] [--signal SIGNAL] [--save SAVE]
                        [--plot PLOT]
