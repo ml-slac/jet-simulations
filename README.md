@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-* `numpy`, `matplotlib`, `rootpy`, 'PyROOT', and `scikit-image` for python.
+* `numpy`, `matplotlib`, `rootpy`, `PyROOT`, and `scikit-image` for python.
 * `fastjet` version >= 3.1.0
 * `Pythia` version >= 8.1
 * `ROOT`
