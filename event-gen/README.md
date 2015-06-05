@@ -1,7 +1,3 @@
 #How to use:
 
-1. `source setup.sh`
-2. `make`
-3. `./event-gen --help`
-
-
+`make -j` should build everything, provided you have `ROOT`, `fastjet`, and `Pythia` all configured.
