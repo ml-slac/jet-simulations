@@ -75,9 +75,17 @@ OBJ := MI.o MIAnalysis.o MITools.o
 
 EXECUTABLE := event-gen
 
+EXTERNALS  := njettiness
 
-all: $(EXECUTABLE)
+
+
+
+all: $(EXTERNALS) $(EXECUTABLE)
 	@echo "jet-images build sucessful."
+
+njettiness:
+	@echo "Building $@"
+	@$(MAKE) -C $(NSUBDIR)
 
 $(EXECUTABLE): $(OBJ:%=$(BIN)/%)
 	@echo "linking $^ --> $@"
