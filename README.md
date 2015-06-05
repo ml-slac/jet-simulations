@@ -1,9 +1,11 @@
-# `jet-images` --  a framework for jet image event generation and processing.
+# `jet-images`
 
 ## Dependencies
 
-* `numpy`, `matplotlib`, and `scikit-image` for python.
-* 
+* `numpy`, `matplotlib`, `rootpy`, 'PyROOT', and `scikit-image` for python.
+* `fastjet` version >= 3.1.0
+* `Pythia` version >= 8.1
+* `ROOT`
 
 ## Event generation.
 
@@ -32,14 +34,36 @@ optional arguments:
   --bosonmass BOSONMASS
 ```
 
+So, let's say you wanted to generate 1000 jet images `(25, 25)`, `R = 1.0` from a QCD process over all CPUs. You would invoke
 
-
-
-
-
-
+```bash
+python generateEvents.py --outfile=events.root --nevents=1000 --process=QCD --pixels=25 --range=1.0
 ```
-python jetconverter.py --signal=wprime --save=newfile.npy --plot=jet_image *.root
+
+This will generate files `events_cpuN.root` for `N = 1, ..., N_cpus`.
+
+
+
+## Image processing
+
+Image processing is handled in the parent directory. 
+
+
+```bash
+me@mycomputer$ python jetconverter.py --help
+usage: jetconverter.py [-h] [--verbose] [--signal SIGNAL] [--save SAVE]
+                       [--plot PLOT]
+                       [files [files ...]]
+
+positional arguments:
+  files            Files to pass in
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --verbose        Verbose output
+  --signal SIGNAL  String to search for in filenames to indicate a signal file
+  --save SAVE      Filename to write out the data.
+  --plot PLOT      File prefix that will be part of plotting filenames.
 ```
 
 
