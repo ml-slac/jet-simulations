@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /cvmfs/atlas.cern.ch/repo/sw/atlas-gcc/491/x86_64/setup.sh
+
 setup_PYTHIA() {
     #export PYTHIA8LOCATION=/u/at/pnef/Work/Code/pythia8183/
     export PYTHIA8LOCATION=/u/at/lukedeo/software/pythia8210
