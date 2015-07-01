@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 '''
 file: jetconverter.py
-author: Luke de Oliveira, Mar. 2015 
+author: Luke de Oliveira, July 2015 
 
 This file takes files (*.root) produced by the event-gen
-portion of the jet-images codebase and converts them into 
+portion of the jet-simulations codebase and converts them into 
 a more usable format. In particular, this produces a 
 numpy record array with the following fields:
     
@@ -21,43 +22,31 @@ numpy record array with the following fields:
     * 'jet_{x}': x is {pt, eta, phi}, and is the value of x
                    for the leading subjet.
 
-
+    * 'tau_{NM}': N-subjettiness.
 
 '''
+
+
+from argparse import ArgumentParser
 import sys
-import argparse
+import logging
+
 import numpy as np
-from jettools import rotate_jet, flip_jet, plot_mean_jet
+
+from jettools import plot_mean_jet, buffer_to_jet, is_signal
 
 
-def buffer_to_jet(entry, tag = 0, side = 'r', max_entry = 2000, pix = 25):
-    """
-    Takes an entry from an ndarray, and a tag = {0, 1} indicating
-    if its a signal entry or not. The parameter 'side' indicates 
-    which side of the final jet image we want the highest energy.
-    """
-
-    image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle'], normalizer=max_entry, dim=pix), side)
-    return (image / np.linalg.norm(image), tag, 
-        entry['LeadingPt'], entry['LeadingEta'], entry['LeadingPhi'], entry['LeadingM'], entry['Tau32'], entry['Tau21'])
-
-
-def is_signal(f, matcher = 'Wprime'):
-    """
-    Takes as input a filename and a string to match. If the 
-    'matcher' string is found in the filename, the file is 
-    taken to be a signal file.
-    """
-    key = matcher.lower().replace(' ', '').replace('-', '')
-    if key in f.lower().replace(' ', '').replace('-', ''):
-        return 1.0
-    return 0.0
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def perfectsquare(n):
+    '''
+    I hope this is self explanatory...
+    '''
     return n % n**0.5 == 0
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument('--verbose', 
                         action='store_true', 
                         help='Verbose output')
@@ -70,20 +59,16 @@ if __name__ == '__main__':
     parser.add_argument('--save', 
                         default='output.npy', 
                         help = 'Filename to write out the data.')
-
-    # parser.add_argument('--size', 
-    #                     default='output.npy', 
-    #                     help = 'Filename to write out the data.')
-
     parser.add_argument('--plot',  
-                        help = 'File prefix that will be part of plotting filenames.')
+                        help = 'File prefix that\
+                         will be part of plotting filenames.')
 
     parser.add_argument('files', nargs='*', help='Files to pass in')
 
     args = parser.parse_args()
 
     if len(args.files) < 1:
-        sys.stderr.write('Must pass at least one file in.\n')
+        logger.error('Must pass at least one file in -- terminating with error.')
         exit(1)
 
     signal_match = args.signal
@@ -93,16 +78,20 @@ if __name__ == '__main__':
     if args.plot:
         plt_prefix = args.plot
 
-
-    from rootpy.io import root_open
+    try:
+        from rootpy.io import root_open
+    except ImportError:
+        raise ImportError('rootpy (www.rootpy.org) not installed\
+         -- install, then try again!')
 
     pix_per_side = -999
     entries = []
     for fname in files:
-        if args.verbose:
-            print 'Working on file: {}'.format(fname)
+        logger.info('working on file: {}'.format(fname))
         with root_open(fname) as f:
             df = f.EventTree.to_array()
+
+            n_entries = df.shape[0]
 
             pix = df[0]['Intensity'].shape[0]
 
@@ -115,23 +104,31 @@ if __name__ == '__main__':
             pix_per_side = int(np.sqrt(pix))
 
             tag = is_signal(fname, signal_match)
-            for jet in df:
-                entries.append(buffer_to_jet(jet, tag, max_entry=2600, pix=pix_per_side))
+            for jet_nb, jet in enumerate(df):
+                if jet_nb % 1000 == 0:
+                    logger.info('processing jet {} of {} for file {}'.format(
+                            jet_nb, n_entries, fname
+                        ))
+                entries.append(
+                    buffer_to_jet(jet, tag, max_entry=2600, pix=pix_per_side)
+                    )
 
 
-    # datatypes for outputted file.
+    # -- datatypes for outputted file.
     _bufdtype = [('image', 'float64', (pix_per_side, pix_per_side)), 
-             ('signal', float),
-             ('jet_pt', float),
-             ('jet_eta', float),
-             ('jet_phi', float), 
-             ('jet_mass', float),
-             ('tau_32', float), 
-             ('tau_21', float)]
+                 ('signal', float),
+                 ('jet_pt', float),
+                 ('jet_eta', float),
+                 ('jet_phi', float), 
+                 ('jet_mass', float),
+                 ('tau_32', float), 
+                 ('tau_21', float)]
 
     df = np.array(entries, dtype=_bufdtype)
+    logger.info('saving to file: {}'.format(savefile))
     np.save(savefile, df)
 
     if plt_prefix != '':
+        logger.info('plotting...')
         plot_mean_jet(df[df['signal'] == 0], title="Average Jet Image, Background").savefig(plt_prefix + '_bkg.pdf')
         plot_mean_jet(df[df['signal'] == 1], title="Average Jet Image, Signal").savefig(plt_prefix + '_signal.pdf')

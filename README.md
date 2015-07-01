@@ -1,4 +1,4 @@
-# `jet-images`
+# `jet-simulations`
 
 ## Dependencies
 
@@ -7,10 +7,13 @@
 * `Pythia` version >= 8.1
 * `ROOT`
 
+## Building the framework
+
+Typing `make -j` should do the trick on most systems if `fastjet-config`, `pythia8-config`, and `root-config` are all in your `$PATH`. If you're on the SLAC computers, run `./setup.sh` first. This generates the low level event generation script, which can be invoked as `./event-gen`.
+
 ## Event generation.
 
-Event generation is handled in the `./event-gen/` folder. If you go in that folder and type `make`, everything should build.
-This generates the low level event generation script, which can be invoked as `./event-gen`. However, to speed things up, there is a multicore wrapper around this generation process in `generateEvents.py`. Calling `python generateEvents.py --help` yields:
+To speed things up, there is a multicore wrapper around this generation process in `generateEvents.py`. Calling `python generateEvents.py --help` yields:
 
 ```
 usage: generateEvents.py [-h] [--outfile OUTFILE] [--nevents NEVENTS]
@@ -65,5 +68,7 @@ optional arguments:
   --save SAVE      Filename to write out the data.
   --plot PLOT      File prefix that will be part of plotting filenames.
 ```
+
+An example invocation could look like `./jetconverter.py --signal=Wprime --save=data.npy ./data/*.root`.
 
 

@@ -41,16 +41,8 @@ PYTHIALIBS      = $(shell pythia8-config --libs)
 
 
 HEPLIBS += $(FASTJETLIBS)
-
-# --- For n-subjettiness calculation
-# HEPLIBS += -lNsubjettiness
-
 HEPLIBS += $(ROOTLIBS)
 HEPLIBS += $(PYTHIALIBS)
-
-
-
-
 
 # --- Add HEP flags to common stuff
 CXXFLAGS += $(ROOTFLAGS)
@@ -61,23 +53,12 @@ LIBS     += $(HEPLIBS)
 
 LDFLAGS   = $(ROOTLDFLAGS) $(PYTHIALDFLAGS) $(FASTJETLDFLAGS)
 
-
-# -- Boost Flags
-# BOOSTINCDIR      = /usr/local/include
-# BOOSTLIBLOCATION = /usr/local/lib
-
-# CXXFLAGS += -I$(BOOSTINCDIR)
-# LIBS     += -L$(BOOSTLIBLOCATION) -lboost_program_options 
-
-
 # --- building excecutable
 OBJ := MI.o MIAnalysis.o MITools.o
 
 EXECUTABLE := event-gen
 
 EXTERNALS  := njettiness
-
-
 
 
 all: $(EXTERNALS) $(EXECUTABLE)
@@ -125,11 +106,14 @@ CLEANLIST     = *~ *.o *.o~ *.d core
 clean:
 	rm -fr $(CLEANLIST) $(CLEANLIST:%=$(BIN)/%) $(CLEANLIST:%=$(DEP)/%)
 	rm -fr $(BIN) 
+	@$(MAKE) $@ -C $(NSUBDIR)
 
 purge:
 	rm -fr $(CLEANLIST) $(CLEANLIST:%=$(BIN)/%) $(CLEANLIST:%=$(DEP)/%)
 	rm -fr $(BIN) 
 	rm -fr $(EXECUTABLE)
+	@$(MAKE) $@ -C $(NSUBDIR)
 
 rmdep: 
 	rm -f $(DEP)/*.d
+	@$(MAKE) $@ -C $(NSUBDIR)

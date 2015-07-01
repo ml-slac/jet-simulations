@@ -114,7 +114,7 @@ int main(int argc, const char* argv[])
     pythia8->readString("Next:numberShowInfo = 0");
     pythia8->readString("Next:numberShowEvent = 0");
     pythia8->readString("Next:numberShowLHA = 0");
-    pythia8->raedString("Next:numberShowProcess = 0");
+    pythia8->readString("Next:numberShowProcess = 0");
     
     if(proc == 1)
     {
@@ -194,9 +194,9 @@ int main(int argc, const char* argv[])
     // Event loop
     for (Int_t iev = 0; iev < nEvents; iev++) 
     {
-        if (iev%10==0)
+        if (iev%1000==0)
         {
-            std::cout << iev << std::endl;
+            std::cout << "Generating event number " << iev << std::endl;
         }
         analysis->AnalyzeEvent(iev, pythia8, pythia_MB, pileup, pixels, image_range);
     }
