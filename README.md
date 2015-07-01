@@ -9,7 +9,7 @@
 
 ## Building the framework
 
-Typing `make -j` should do the trick on most systems if `fastjet-config`, `pythia8-config`, and `root-config` are all in your `$PATH`. If you're on the SLAC computers, run `./setup.sh` first. This generates the low level event generation script, which can be invoked as `./event-gen`.
+Typing `make -j` should do the trick on most systems if `fastjet-config`, `pythia8-config`, and `root-config` are all in your `$PATH`. If you're on the SLAC computers, run `./setup.sh` first. This generates the low level event generation script (contained in the `./event-gen` folder), which can be invoked as `./event-gen/event-gen`, if you really need to.
 
 ## Event generation.
 
