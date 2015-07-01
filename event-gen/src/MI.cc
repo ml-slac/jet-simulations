@@ -111,6 +111,11 @@ int main(int argc, const char* argv[])
     cout << ss.str() << endl; 
     pythia8->readString(ss.str());
 
+    pythia8->readString("Next:numberShowInfo = 0");
+    pythia8->readString("Next:numberShowEvent = 0");
+    pythia8->readString("Next:numberShowLHA = 0");
+    pythia8->raedString("Next:numberShowProcess = 0");
+    
     if(proc == 1)
     {
         std::stringstream bosonmass_str; bosonmass_str<< "32:m0=" << boson_mass ;
