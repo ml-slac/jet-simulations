@@ -268,7 +268,6 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     for (int i = 0; i < sorted_consts.size(); i++)
     {
         rotatedimage->Fill(consts_image[i].first,consts_image[i].second,sorted_consts[i].e());
-      //std::cout << i << "       " << consts_image[i].first  << " " << consts_image[i].second << std::endl;  
     }
 
     //Step 5: Dump the images in the tree!
@@ -287,49 +286,16 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
 
     // Step 6: Fill in nsubjettiness
     //----------------------------------------------------------------------------
-    // NsubParameters myNsubParam(1.0, 1.0);
-    // NsubParameters paraNsub(beta, R0, Rcutoff);
-
-    // Nsubjettiness nSub1KT(1, Njettiness::kt_axes, 1, 1, 1);
-    // double tau1 = nSub1KT(subjets[0]);
-
-    // Nsubjettiness nSub2KT(2, Njettiness::kt_axes, 1, 1, 1);
-    // double tau2 = nSub2KT(subjets[0]);
-
-    // Nsubjettiness nSub3KT(3, Njettiness::kt_axes, 1, 1, 1);
-    // double tau3 = nSub3KT(subjets[0]);
-
-    // fTTau1 = tau1;
-    // fTTau2 = tau2;
-    // fTTau3 = tau3;
-
-    OnePass_KT_Axes axis_spec;
+    OnePass_WTA_KT_Axes axis_spec;
     NormalizedMeasure parameters(1.0, 1.0);
-    // NsubjettinessRatio nSubRatio32(3, 2, axis_spec, parameters);
-    // NsubjettinessRatio nSubRatio21(2, 1, axis_spec, parameters);
-
-    // sorted_consts[0]
-
-    // fTTau32 = nSubRatio32.result(sorted_consts[0]);
-    // fTTau21 = nSubRatio21.result(sorted_consts[0]);
-
-    
-    
-
-
-    // 
 
     // NormalizedMeasure parameters(1.0, 1.0);
-    Nsubjettiness subjettiness_1(1, axis_spec, parameters);
     Nsubjettiness subjettiness_2(2, axis_spec, parameters);
     Nsubjettiness subjettiness_3(3, axis_spec, parameters);
-
-    // // vector<fastjet::PseudoJet> particles_njet = leading_jet.constituents();
 
     fTTau1 = (float) subjettiness_1.result(leading_jet);
     fTTau2 = (float) subjettiness_2.result(leading_jet);
     fTTau3 = (float) subjettiness_3.result(leading_jet);
-
 
     fTTau32 = (abs(fTTau2) < 1e-4 ? -10 : fTTau3 / fTTau2);
     fTTau21 = (abs(fTTau1) < 1e-4 ? -10 : fTTau2 / fTTau1);
@@ -376,11 +342,6 @@ void MIAnalysis::ResetBranches(){
     fTSubLeadingPhi = -999;
     fTSubLeadingEta = -999;
     fTRotationAngle = -999;
-
-    // fTTau1 = -999;
-    // fTTau2 = -999;
-    // fTTau3 = -999;
-
 
     fTTau32 = -999;
     fTTau21 = -999;
