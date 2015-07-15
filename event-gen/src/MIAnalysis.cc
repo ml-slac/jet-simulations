@@ -181,11 +181,14 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         return;
     }
 
-    // Dump kinematics of the leading subjet.
-    fTLeadingEta = subjets[0].eta();
-    fTLeadingPhi = subjets[0].phi();
-    fTLeadingPt = subjets[0].perp();
-    fTLeadingM = subjets[0].m();
+    bool overall = true;
+    // Dump kinematics of the leading jet.
+    // For the leading SUBjet, put subjets[0].
+    fTLeadingEta = leading_jet.eta();
+    fTLeadingPhi = leading_jet.phi();
+    fTLeadingPt = leading_jet.perp();
+    fTLeadingM = leading_jet.m();
+    
     
     vector<pair<double, double>  > consts_image;
     vector<pair<double, double>  > subjets_image; 
@@ -290,6 +293,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     NormalizedMeasure parameters(1.0, 1.0);
 
     // NormalizedMeasure parameters(1.0, 1.0);
+    Nsubjettiness subjettiness_1(1, axis_spec, parameters);
     Nsubjettiness subjettiness_2(2, axis_spec, parameters);
     Nsubjettiness subjettiness_3(3, axis_spec, parameters);
 
