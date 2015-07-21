@@ -30,6 +30,7 @@ def determine_allocation(n_samples, n_cpus = -1):
     per_cpu = int(floor(float(n_samples) / n_cpus))
 
     added = 0
+    to_add = n_samples
 
     for i in xrange(n_cpus):
         if i == (n_cpus - 1):
@@ -53,17 +54,33 @@ def generate_calls(n_events, n_cpus=-1, outfile='gen.root', process='WprimeToWZ_
         n_cpus = cpu_count() - 1
     print 'Splitting event generation over {} CPUs'.format(n_cpus)
     events_per_core = zip(determine_allocation(n_events, n_cpus), range(n_cpus))
+    
+    def _filename_prepare(f):
+        if f.find('.root') < 0:
+            return f + '.root'
+        return f
+
+    lookup = {'ZprimeTottbar' : "1",
+              'WprimeToWZ_lept'  : "2",
+              'WprimeToWZ_had' : "3",
+              'QCD' : "4"}
+
+    if n_cpus == 1:
+        _call = ['./event-gen/event-gen', 
+                 '--OutFile', _filename_prepare(outfile), 
+                 '--NEvents', str(n_events), 
+                 '--Proc', lookup[process], 
+                 '--Pixels', str(pixels), 
+                 '--Range', str(imrange), 
+                 '--Pileup', str(pileup), 
+                 '--pThatMin', str(pt_hat_min), 
+                 '--pThatMax', str(pt_hat_max),
+                 '--BosonMass', str(bosonmass)]
+        return [_call]
+
 
     def _generate_call(par):
-        def _filename_prepare(f):
-            if f.find('.root') < 0:
-                return f + '.root'
-            return f
 
-        lookup = {'ZprimeTottbar' : "1",
-                  'WprimeToWZ_lept'  : "2",
-                  'WprimeToWZ_had' : "3",
-                  'QCD' : "4"}
         try:
             _ = lookup[process]
         except:
