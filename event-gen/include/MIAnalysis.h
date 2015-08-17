@@ -94,9 +94,13 @@ class MIAnalysis
         float fTTau21;
         float fTTau32;
 
+        float fTTau21old;
+        float fTTau32old;
 
         float *fTIntensity;
         float *fTRotatedIntensity;
+        float *fTLocalDensity;
+        float *fTGlobalDensity;
 
         // float fTPt [MaxN];
         // double fTEta [MaxN];

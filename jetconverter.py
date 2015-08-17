@@ -122,7 +122,10 @@ if __name__ == '__main__':
                  ('jet_phi', float), 
                  ('jet_mass', float),
                  ('tau_32', float), 
-                 ('tau_21', float)]
+                 ('tau_21', float), 
+                 ('tau_32_old', float), 
+                 ('tau_21_old', float), 
+                 ('total_energy', float)]
 
     df = np.array(entries, dtype=_bufdtype)
     logger.info('saving to file: {}'.format(savefile))

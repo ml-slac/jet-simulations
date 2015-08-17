@@ -24,11 +24,17 @@ def buffer_to_jet(entry, tag = 0, side = 'r', max_entry = 2000, pix = 25):
         * LeadingM
         * Tau32
         * Tau21
+        * Tau32old
+        * Tau21old
     """
 
     image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle'], normalizer=max_entry, dim=pix), side)
-    return (image / np.linalg.norm(image), tag, 
-        entry['LeadingPt'], entry['LeadingEta'], entry['LeadingPhi'], entry['LeadingM'], entry['Tau32'], entry['Tau21'])
+    e_norm = np.linalg.norm(image)
+    return (image / e_norm, tag, 
+        entry['LeadingPt'], entry['LeadingEta'], 
+        entry['LeadingPhi'], entry['LeadingM'], 
+        entry['Tau32'], entry['Tau21'], 
+        entry['Tau32old'], entry['Tau21old'], e_norm)
 
 
 def is_signal(f, matcher = 'Wprime'):

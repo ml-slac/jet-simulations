@@ -34,6 +34,16 @@ using namespace std;
 using namespace fastjet;
 using namespace fastjet::contrib;
 
+typedef pair<double, double> point;
+
+double euclidean_distance(const point &x, const point &y)
+{
+    double d1 = x.first - y.first;
+    double d2 = x.second - y.second;
+
+    return sqrt(d1 * d1 + d2 * d2);
+}
+
 // Constructor 
 MIAnalysis::MIAnalysis(int imagesize)
 {
@@ -41,6 +51,8 @@ MIAnalysis::MIAnalysis(int imagesize)
     MaxN = imagesize;
     fTIntensity = new float[imagesize];
     fTRotatedIntensity = new float[imagesize];
+    fTLocalDensity = new float[imagesize];
+    fTGlobalDensity = new float[imagesize];
 
 
     if(fDebug) cout << "MIAnalysis::MIAnalysis Start " << endl;
@@ -70,6 +82,8 @@ MIAnalysis::~MIAnalysis()
 
     delete[] fTIntensity;
     delete[] fTRotatedIntensity;
+    delete[] fTGlobalDensity;
+    delete[] fTLocalDensity;
 }
 
 // Begin method
@@ -233,6 +247,39 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
       //std::cout << i << "       " << consts_image[i].first  << " " << consts_image[i].second << std::endl;  
     }
 
+    //Step 2b): fill in the density
+    //-------------------------------------------------------------------------
+    // double Rlocal = 0.5;
+    // double Rglobal = 1.0;
+    // TH2F* localdensity = new TH2F("", "", pixels, -range, range, pixels, -range, range);
+    // TH2F* globaldensity = new TH2F("", "", pixels, -range, range, pixels, -range, range);
+    // for (int i = 0; i < sorted_consts.size(); ++i)
+    // {
+    //     auto reference_px = consts_image[i];
+    //     auto ref_pt = sorted_consts[i].e();
+
+    //     double global_acc = 0;
+    //     double local_acc = 0;
+
+    //     for (int j = 0; j < sorted_consts.size(); ++j)
+    //     {   
+    //         if (j != i)
+    //         {
+    //             auto dR = euclidean_distance(reference_px, consts_image[j]);
+    //             if (dR <= Rglobal)
+    //             {
+    //                 global_acc += (ref_pt / dR);
+    //                 if (dR <= Rlocal)
+    //                 {
+    //                     local_acc += (ref_pt / dR);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     localdensity->Fill(reference_px.first, reference_px.second, local_acc);
+    //     globaldensity->Fill(reference_px.first, reference_px.second, global_acc);
+    // }
+
 
     //Step 3: Rotate so the subleading subjet is at -pi/2
     //-------------------------------------------------------------------------
@@ -265,13 +312,14 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
 
     theta = atan(subjets_image[1].second/subjets_image[1].first);
 
-    //Step 4: fill in the rotated image
+    //Step 4b): fill in the rotated image
     //-------------------------------------------------------------------------
     TH2F* rotatedimage = new TH2F("", "", pixels, -range, range, pixels, -range, range);
     for (int i = 0; i < sorted_consts.size(); i++)
     {
         rotatedimage->Fill(consts_image[i].first,consts_image[i].second,sorted_consts[i].e());
     }
+    
 
     //Step 5: Dump the images in the tree!
     //-------------------------------------------------------------------------
@@ -282,12 +330,14 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         {
             fTRotatedIntensity[counter] = rotatedimage->GetBinContent(i,j);
             fTIntensity[counter] = orig_im->GetBinContent(i,j);
+            // fTLocalDensity[counter] = localdensity->GetBinContent(i, j);
+            // fTGlobalDensity[counter] = globaldensity->GetBinContent(i, j);
 
             counter++;
         }
     }
 
-    // Step 6: Fill in nsubjettiness
+    // Step 6: Fill in nsubjettiness (new)
     //----------------------------------------------------------------------------
     OnePass_WTA_KT_Axes axis_spec;
     NormalizedMeasure parameters(1.0, 1.0);
@@ -304,6 +354,23 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     fTTau32 = (abs(fTTau2) < 1e-4 ? -10 : fTTau3 / fTTau2);
     fTTau21 = (abs(fTTau1) < 1e-4 ? -10 : fTTau2 / fTTau1);
 
+
+    // Step 7: Fill in nsubjettiness (old)
+    //----------------------------------------------------------------------------
+    OnePass_KT_Axes axis_spec_old;
+    NormalizedMeasure parameters_old(1.0, 1.0);
+
+    Nsubjettiness old_subjettiness_1(1, axis_spec_old, parameters_old);
+    Nsubjettiness old_subjettiness_2(2, axis_spec_old, parameters_old);
+    Nsubjettiness old_subjettiness_3(3, axis_spec_old, parameters_old);
+
+    fTTau1 = (float) old_subjettiness_1.result(leading_jet);
+    fTTau2 = (float) old_subjettiness_2.result(leading_jet);
+    fTTau3 = (float) old_subjettiness_3.result(leading_jet);
+
+    fTTau32old = (abs(fTTau2) < 1e-4 ? -10 : fTTau3 / fTTau2);
+    fTTau21old = (abs(fTTau1) < 1e-4 ? -10 : fTTau2 / fTTau1);
+
     tT->Fill();
 
     return;
@@ -317,6 +384,9 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("NFilled", &fTNFilled, "NFilled/I");
 
     tT->Branch("Intensity", *&fTIntensity, "Intensity[NFilled]/F");
+
+    // tT->Branch("LocalDensity", *&fTLocalDensity, "LocalDensity[NFilled]/F");
+    // tT->Branch("GlobalDensity", *&fTGlobalDensity, "GlobalDensity[NFilled]/F");
 
     tT->Branch("RotatedIntensity", 
         *&fTRotatedIntensity, "RotatedIntensity[NFilled]/F");
@@ -336,6 +406,8 @@ void MIAnalysis::DeclareBranches()
 
     tT->Branch("Tau32", &fTTau32, "Tau32/F");
     tT->Branch("Tau21", &fTTau21, "Tau21/F");
+    tT->Branch("Tau32old", &fTTau32old, "Tau32old/F");
+    tT->Branch("Tau21old", &fTTau21old, "Tau21old/F");
     return;
 }
 
@@ -346,9 +418,12 @@ void MIAnalysis::ResetBranches(){
     fTSubLeadingPhi = -999;
     fTSubLeadingEta = -999;
     fTRotationAngle = -999;
-
+  
     fTTau32 = -999;
     fTTau21 = -999;
+
+    fTTau32old = -999;
+    fTTau21old = -999;
 
     fTLeadingEta = -999;
     fTLeadingPhi = -999;
@@ -359,5 +434,7 @@ void MIAnalysis::ResetBranches(){
     {
         fTIntensity[iP]= -999;
         fTRotatedIntensity[iP]= -999;
+        fTLocalDensity[iP]= -999;
+        fTGlobalDensity[iP]= -999;
     }
 }
