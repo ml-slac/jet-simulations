@@ -37,9 +37,9 @@ def generate_script(d):
     return 'cd {}\n'.format(simulation_dir()) + 'source ./setup.sh\n./event-gen/event-gen --OutFile {file} \
     --Proc {process} --NEvents {events} --pThatMin {pthatmin} --pThatMax {pthatmax} --BosonMass {bosonmass}'.format(**d)
 
-def bsub_wrapper(script, name, queue, log):
-    return 'bsub -J "%s" -o %s -q %s < %s' % (
-            log, queue, name, script
+def bsub_wrapper(name, queue, log):
+    return 'bsub -J "%s" -o %s -q %s' % (
+            name, log, queue
         )
 
 
@@ -119,14 +119,15 @@ if __name__ == '__main__':
             'pthatmax' : PT_HAT_MAX, 
             'bosonmass': BOSON_MASS
         }
-        buf = os.path.join(work_dir, '.tmp-buf')
-        with open(buf, 'wb') as _buf:
-            _buf.write(generate_script(job_params))
+        # buf = os.path.join(work_dir, '.tmp-buf')
+        # with open(buf, 'wb') as _buf:
+        #     _buf.write(generate_script(job_params))
         log('Job log is {}.'.format(log_file))
         log('Job output is {}.'.format(os.path.join(scratch_space, output_file)))
-        cmd = bsub_wrapper(buf, 'job_%s_of_%s' % (job, args.jobs), 'medium', log_file)
+        cmd = bsub_wrapper('job_%s_of_%s' % (job, args.jobs), 'medium', log_file)
         log('Call is: {}'.format(cmd))
-        job_out = Popen(cmd.split(), stdout=PIPE, stderr=STDOUT)
+        job_out = Popen(cmd.split(), stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+        _ = job_out.communicate(input=generate_script(job_params))
         log('Success.')
 
 
