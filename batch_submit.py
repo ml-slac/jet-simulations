@@ -29,6 +29,11 @@ PT_HAT_MIN, PT_HAT_MAX = [200, 400]
 ###########################################
 
 def simulation_dir():
+    '''
+    Returns the path to all of the simulation code.
+
+    Put in your /path/to/jet-simulations
+    '''
     if os.environ['USER'] == 'lukedeo':
         return '/u/at/lukedeo/jet-simulations'
     elif os.environ['USER'] == 'bpn7':
@@ -39,10 +44,31 @@ def simulation_dir():
 
 
 def generate_script(d):
+    '''
+    Generates a boilerplate script of the form:
+
+    cd /path/to/jet-simulations
+    source ./setup.sh
+    ./event-gen/event-gen --OutFile test.root --Proc 3 --NEvents 100 --pThatMin 200 --pThatMax 400 --BosonMass 800
+
+    where the flags are filled in by `d`
+
+    `d` should have the following keys:
+        * file
+        * process
+        * events
+        * pthatmin
+        * pthatmax
+        * bosonmass
+
+    '''
     return 'cd {}\n'.format(simulation_dir()) + 'source ./setup.sh\n./event-gen/event-gen --OutFile {file} \
     --Proc {process} --NEvents {events} --pThatMin {pthatmin} --pThatMax {pthatmax} --BosonMass {bosonmass}'.format(**d)
 
-def bsub_wrapper(name, queue, log):
+def invoke_bsub(name, queue, log):
+    '''
+    Starts up bsub, and hangs in a state where a script can be piped in.
+    '''
     return 'bsub -J "%s" -o %s -q %s' % (
             name, log, queue
         )
@@ -67,8 +93,7 @@ if __name__ == '__main__':
         help='Path to directory to write the logs')
     
     parser.add_argument('--process', type=str, default='qcd',
-        help='which process? One of {qcd, wprime}')
-
+        help='which process?', choices=['qcd', 'wprime'])
 
     process_dict = {'qcd' : 4, 'wprime' : 3}
 
@@ -87,6 +112,7 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(args.log_dir, subdir))
 
     log('Will write logs to {}'.format(os.path.join(args.log_dir, subdir)))
+    
     # -- make the job output directory
     scratch_space = os.path.join(args.output_dir, subdir)
     if not os.path.exists(os.path.join(args.output_dir, subdir)):
@@ -136,7 +162,7 @@ if __name__ == '__main__':
         log('Job output is {}.'.format(os.path.join(scratch_space, output_file)))
 
         # -- wrap the call to the batch system
-        cmd = bsub_wrapper('j%sof%s' % (job + 1, args.jobs), 'medium', log_file)
+        cmd = invoke_bsub('j%sof%s' % (job + 1, args.jobs), 'medium', log_file)
 
         log('Call is: {}'.format(cmd))
 
