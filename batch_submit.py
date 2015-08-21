@@ -123,8 +123,10 @@ if __name__ == '__main__':
         with open(buf, 'wb') as _buf:
             _buf.write(generate_script(job_params))
         log('Job log is {}.'.format(log_file))
-        log('Job output is {}.'.format(output_file))
-        job_out = Popen(bsub_wrapper(buf, 'job_%s_of_%s' % (job, args.jobs), 'medium', log_file).split(), stdout=PIPE, stderr=STDOUT)
+        log('Job output is {}.'.format(os.path.join(scratch_space, output_file)))
+        cmd = bsub_wrapper(buf, 'job_%s_of_%s' % (job, args.jobs), 'medium', log_file)
+        log('Call is: {}'.format(cmd))
+        job_out = Popen(cmd.split(), stdout=PIPE, stderr=STDOUT)
         log('Success.')
 
 
