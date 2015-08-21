@@ -9,7 +9,7 @@ setup_GCC()
 setup_PYTHIA() {
     #export PYTHIA8LOCATION=/u/at/pnef/Work/Code/pythia8183/
     export PYTHIA8LOCATION=/u/at/lukedeo/software/pythia8210
-    export PYTHIA8DATA=${PYTHIA8LOCATION}/xmldoc/
+    export PYTHIA8DATA=${PYTHIA8LOCATION}/share/Pythia8/xmldoc/
     export LD_LIBRARY_PATH=${PYTHIA8LOCATION}/lib/:$LD_LIBRARY_PATH
 }
 
