@@ -50,9 +50,9 @@ MIAnalysis::MIAnalysis(int imagesize)
     imagesize *= imagesize;
     MaxN = imagesize;
     fTIntensity = new float[imagesize];
-    fTRotatedIntensity = new float[imagesize];
-    fTLocalDensity = new float[imagesize];
-    fTGlobalDensity = new float[imagesize];
+    // fTRotatedIntensity = new float[imagesize];
+    // fTLocalDensity = new float[imagesize];
+    // fTGlobalDensity = new float[imagesize];
 
 
     if(fDebug) cout << "MIAnalysis::MIAnalysis Start " << endl;
@@ -81,9 +81,9 @@ MIAnalysis::~MIAnalysis()
     delete tool;
 
     delete[] fTIntensity;
-    delete[] fTRotatedIntensity;
-    delete[] fTGlobalDensity;
-    delete[] fTLocalDensity;
+    // delete[] fTRotatedIntensity;
+    // delete[] fTGlobalDensity;
+    // delete[] fTLocalDensity;
 }
 
 // Begin method
@@ -195,7 +195,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         return;
     }
 
-    bool overall = true;
+    // bool overall = true;
     // Dump kinematics of the leading jet.
     // For the leading SUBjet, put subjets[0].
     fTLeadingEta = leading_jet.eta();
@@ -281,6 +281,8 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     // }
 
 
+    fTdeltaR = euclidean_distance(subjets_image[0], subjets_image[1]);
+
     //Step 3: Rotate so the subleading subjet is at -pi/2
     //-------------------------------------------------------------------------
     fTSubLeadingEta = subjets_image[1].first;
@@ -312,23 +314,23 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
 
     theta = atan(subjets_image[1].second/subjets_image[1].first);
 
-    //Step 4b): fill in the rotated image
-    //-------------------------------------------------------------------------
-    TH2F* rotatedimage = new TH2F("", "", pixels, -range, range, pixels, -range, range);
-    for (int i = 0; i < sorted_consts.size(); i++)
-    {
-        rotatedimage->Fill(consts_image[i].first,consts_image[i].second,sorted_consts[i].e());
-    }
+    // //Step 4b): fill in the rotated image
+    // //-------------------------------------------------------------------------
+    // TH2F* rotatedimage = new TH2F("", "", pixels, -range, range, pixels, -range, range);
+    // for (int i = 0; i < sorted_consts.size(); i++)
+    // {
+    //     rotatedimage->Fill(consts_image[i].first,consts_image[i].second,sorted_consts[i].e());
+    // }
     
 
     //Step 5: Dump the images in the tree!
     //-------------------------------------------------------------------------
     int counter=0;
-    for (int i=1; i<=rotatedimage->GetNbinsX(); i++)
+    for (int i=1; i<=orig_im->GetNbinsX(); i++)
     {
-        for (int j=1; j<=rotatedimage->GetNbinsY(); j++)
+        for (int j=1; j<=orig_im->GetNbinsY(); j++)
         {
-            fTRotatedIntensity[counter] = rotatedimage->GetBinContent(i,j);
+            // fTRotatedIntensity[counter] = rotatedimage->GetBinContent(i,j);
             fTIntensity[counter] = orig_im->GetBinContent(i,j);
             // fTLocalDensity[counter] = localdensity->GetBinContent(i, j);
             // fTGlobalDensity[counter] = globaldensity->GetBinContent(i, j);
@@ -355,21 +357,21 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     fTTau21 = (abs(fTTau1) < 1e-4 ? -10 : fTTau2 / fTTau1);
 
 
-    // Step 7: Fill in nsubjettiness (old)
-    //----------------------------------------------------------------------------
-    OnePass_KT_Axes axis_spec_old;
-    NormalizedMeasure parameters_old(1.0, 1.0);
+    // // Step 7: Fill in nsubjettiness (old)
+    // //----------------------------------------------------------------------------
+    // OnePass_KT_Axes axis_spec_old;
+    // NormalizedMeasure parameters_old(1.0, 1.0);
 
-    Nsubjettiness old_subjettiness_1(1, axis_spec_old, parameters_old);
-    Nsubjettiness old_subjettiness_2(2, axis_spec_old, parameters_old);
-    Nsubjettiness old_subjettiness_3(3, axis_spec_old, parameters_old);
+    // Nsubjettiness old_subjettiness_1(1, axis_spec_old, parameters_old);
+    // Nsubjettiness old_subjettiness_2(2, axis_spec_old, parameters_old);
+    // Nsubjettiness old_subjettiness_3(3, axis_spec_old, parameters_old);
 
-    fTTau1 = (float) old_subjettiness_1.result(leading_jet);
-    fTTau2 = (float) old_subjettiness_2.result(leading_jet);
-    fTTau3 = (float) old_subjettiness_3.result(leading_jet);
+    // fTTau1 = (float) old_subjettiness_1.result(leading_jet);
+    // fTTau2 = (float) old_subjettiness_2.result(leading_jet);
+    // fTTau3 = (float) old_subjettiness_3.result(leading_jet);
 
-    fTTau32old = (abs(fTTau2) < 1e-4 ? -10 : fTTau3 / fTTau2);
-    fTTau21old = (abs(fTTau1) < 1e-4 ? -10 : fTTau2 / fTTau1);
+    // fTTau32old = (abs(fTTau2) < 1e-4 ? -10 : fTTau3 / fTTau2);
+    // fTTau21old = (abs(fTTau1) < 1e-4 ? -10 : fTTau2 / fTTau1);
 
     tT->Fill();
 
@@ -388,8 +390,8 @@ void MIAnalysis::DeclareBranches()
     // tT->Branch("LocalDensity", *&fTLocalDensity, "LocalDensity[NFilled]/F");
     // tT->Branch("GlobalDensity", *&fTGlobalDensity, "GlobalDensity[NFilled]/F");
 
-    tT->Branch("RotatedIntensity", 
-        *&fTRotatedIntensity, "RotatedIntensity[NFilled]/F");
+    // tT->Branch("RotatedIntensity", 
+    //     *&fTRotatedIntensity, "RotatedIntensity[NFilled]/F");
 
     tT->Branch("SubLeadingEta", &fTSubLeadingEta, "SubLeadingEta/F");
     tT->Branch("SubLeadingPhi", &fTSubLeadingPhi, "SubLeadingPhi/F");
@@ -400,14 +402,16 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("LeadingM", &fTLeadingM, "LeadingM/F");
     tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
 
-    // tT->Branch("Tau1", &fTTau1, "Tau1/F");
-    // tT->Branch("Tau2", &fTTau2, "Tau2/F");
-    // tT->Branch("Tau3", &fTTau3, "Tau3/F");
+    tT->Branch("Tau1", &fTTau1, "Tau1/F");
+    tT->Branch("Tau2", &fTTau2, "Tau2/F");
+    tT->Branch("Tau3", &fTTau3, "Tau3/F");
+
+    tT->Branch("DeltaR", &fTdeltaR, "DeltaR/F");
 
     tT->Branch("Tau32", &fTTau32, "Tau32/F");
     tT->Branch("Tau21", &fTTau21, "Tau21/F");
-    tT->Branch("Tau32old", &fTTau32old, "Tau32old/F");
-    tT->Branch("Tau21old", &fTTau21old, "Tau21old/F");
+    // tT->Branch("Tau32old", &fTTau32old, "Tau32old/F");
+    // tT->Branch("Tau21old", &fTTau21old, "Tau21old/F");
     return;
 }
 
@@ -422,8 +426,12 @@ void MIAnalysis::ResetBranches(){
     fTTau32 = -999;
     fTTau21 = -999;
 
-    fTTau32old = -999;
-    fTTau21old = -999;
+    fTTau1 = 999;
+    fTTau2 = 999;
+    fTTau3 = 999;
+
+    // fTTau32old = -999;
+    // fTTau21old = -999;
 
     fTLeadingEta = -999;
     fTLeadingPhi = -999;
@@ -433,8 +441,8 @@ void MIAnalysis::ResetBranches(){
     for (int iP=0; iP < MaxN; ++iP)
     {
         fTIntensity[iP]= -999;
-        fTRotatedIntensity[iP]= -999;
-        fTLocalDensity[iP]= -999;
-        fTGlobalDensity[iP]= -999;
+        // fTRotatedIntensity[iP]= -999;
+        // fTLocalDensity[iP]= -999;
+        // fTGlobalDensity[iP]= -999;
     }
 }
