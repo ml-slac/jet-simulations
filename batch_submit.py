@@ -90,6 +90,11 @@ if __name__ == '__main__':
     log('Will write samples to {}'.format(scratch_space))
 
     log('Script submitted for {} generation.'.format(args.process))
+    
+    log('Generating {} x {} = {} events.'.format(
+            args.jobs, args.events, args.jobs * args.events
+        )
+    )
     # -- which process?
     process_code = process_dict[args.process]
 
@@ -117,6 +122,8 @@ if __name__ == '__main__':
         buf = os.path.join(work_dir, '.tmp-buf')
         with open(buf, 'wb') as _buf:
             _buf.write(generate_script(job_params))
+        log('Job log is {}.'.format(log_file))
+        log('Job output is {}.'.format(output_file))
         job_out = Popen(bsub_wrapper(buf, 'job_%s_of_%s' % (job, args.jobs), 'medium', log_file).split(), stdout=PIPE, stderr=STDOUT)
         log('Success.')
 
