@@ -62,6 +62,7 @@ if __name__ == '__main__':
     parser.add_argument('--plot',  
                         help = 'File prefix that\
                          will be part of plotting filenames.')
+    parser.add_argument('--ptmin', default=200.0, help = 'minimum pt to consider')
 
     parser.add_argument('files', nargs='*', help='Files to pass in')
 
@@ -109,9 +110,10 @@ if __name__ == '__main__':
                     logger.info('processing jet {} of {} for file {}'.format(
                             jet_nb, n_entries, fname
                         ))
-                entries.append(
-                    buffer_to_jet(jet, tag, max_entry=2600, pix=pix_per_side)
-                    )
+                if jet['LeadingPt'] > float(args.ptmin):
+                    entries.append(
+                        buffer_to_jet(jet, tag, max_entry=2600, pix=pix_per_side)
+                        )
 
 
     # -- datatypes for outputted file.
