@@ -117,7 +117,7 @@ if __name__ == '__main__':
         buf = os.path.join(work_dir, '.tmp-buf')
         with open(buf, 'wb') as buffer:
             buffer.write(generate_script(job_params))
-        job_out = Popen(bsub_wrapper(buf, 'job_%s_of_%s' % (job, args.jobs), 'medium', logfile), stdout=PIPE, stderr=STDOUT)
+        job_out = Popen(bsub_wrapper(buf, 'job_%s_of_%s' % (job, args.jobs), 'medium', log_file), stdout=PIPE, stderr=STDOUT)
         log('Success.')
 
 
