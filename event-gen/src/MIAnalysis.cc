@@ -179,7 +179,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         fastjet::antikt_algorithm, 1.0);
 
     fastjet::Filter trimmer(fastjet::JetDefinition(fastjet::kt_algorithm, 0.3),
-        fastjet::SelectorPtFractionMin(0.05));
+        fastjet::SelectorPtFractionMin(1e-6));
 
     fastjet::ClusterSequence csLargeR(particlesForJets, *m_jet_def);
 
