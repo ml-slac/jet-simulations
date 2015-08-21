@@ -20,21 +20,19 @@ logger = logging.getLogger(__name__)
 def log(msg):
     logger.info(LOGGER_PREFIX % msg)
 
-
-
-
-# -- CHANGE THESE PARAMETERS
+####### CHANGE THESE PARAMETERS ###########
 
 BOSON_MASS = 800
 
 PT_HAT_MIN, PT_HAT_MAX = [200, 400]
 
-# -- 
+###########################################
 
 def simulation_dir():
     if os.environ['USER'] == 'lukedeo':
         return '/u/at/lukedeo/jet-simulations'
     elif os.environ['USER'] == 'bpn7':
+        # -- @bnachman you should change this to your directory.
         return '/nfs/slac/g/atlas/u01/users/bnachman/SLAC_pythia/Reclustering'
     else:
         raise ValueError('Invalid user!')
@@ -108,7 +106,9 @@ if __name__ == '__main__':
 
     for job in xrange(args.jobs):
         log('Launching job %s of %s...' % (job + 1, args.jobs))
-        log_file = os.path.join(args.log_dir, subdir, 'log_job_{}'.format(job))
+
+        # -- dump the bsub output into a nice format
+        log_file = os.path.join(args.log_dir, subdir, 'log_job_{}.log'.format(job))
 
         # -- format the output files with all the relevant kinematic shit
         output_file = '%s_process_%s_bosonmass%s_pthat%s-%s_nevents%s_job%s.root' % (
@@ -131,14 +131,19 @@ if __name__ == '__main__':
             'bosonmass': BOSON_MASS
         }
 
+        # -- catalogue where shit is going
         log('Job log is {}.'.format(log_file))
         log('Job output is {}.'.format(os.path.join(scratch_space, output_file)))
 
+        # -- wrap the call to the batch system
         cmd = bsub_wrapper('j%sof%s' % (job + 1, args.jobs), 'medium', log_file)
 
         log('Call is: {}'.format(cmd))
 
+        # -- Open a process...
         job_out = Popen(cmd.split(), stdin=PIPE, stdout=PIPE, stderr=STDOUT)
+
+        # -- ...and feed it the autogen script.
         _ = job_out.communicate(input=generate_script(job_params))
         log('Success.')
 
