@@ -79,13 +79,13 @@ if __name__ == '__main__':
 
     # -- make the logging directory
     if not os.path.exists(os.path.join(args.log_dir, subdir)):
-        os.makedirs(os.path.join(args.log_dir, subdir)):
+        os.makedirs(os.path.join(args.log_dir, subdir))
 
     log('Will write logs to {}'.format(os.path.join(args.log_dir, subdir)))
     # -- make the job output directory
     scratch_space = os.path.join(args.output_dir, subdir)
     if not os.path.exists(os.path.join(args.output_dir, subdir)):
-        os.makedirs(scratch_space):
+        os.makedirs(scratch_space)
 
     log('Will write samples to {}'.format(scratch_space))
 
