@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 '''
 batch_submit.py -- a script to submit batched 
 jet-image event generation jobs.
@@ -5,7 +7,6 @@ jet-image event generation jobs.
 Author: Luke de Oliveira
 '''
 
-#!/usr/bin/env python
 import argparse
 import sys
 import os
