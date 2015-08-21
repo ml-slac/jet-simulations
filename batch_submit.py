@@ -52,16 +52,16 @@ if __name__ == '__main__':
     parser.add_argument('--events', type=int,
         help='Number of events', required=True)
 
-    parser.add_argument('--output-dir', type=str, default='./files'
+    parser.add_argument('--output-dir', type=str, default='./files',
         help='path to directory where data files should be written')
 
-    parser.add_argument('--file-prefix', type=str, default='GENERATED'
+    parser.add_argument('--file-prefix', type=str, default='GENERATED',
         help='prefix written to the start of all output files.')
 
-    parser.add_argument('--log-dir', type=str, default='./logs'
+    parser.add_argument('--log-dir', type=str, default='./logs',
         help='Path to directory to write the logs')
     
-    parser.add_argument('--process', type=str, default='qcd'
+    parser.add_argument('--process', type=str, default='qcd',
         help='which process? One of {qcd, wprime}')
 
 
