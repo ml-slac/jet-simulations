@@ -30,11 +30,11 @@ def simulation_dir():
     elif os.environ['USER'] == 'bpn7':
         return '/nfs/slac/g/atlas/u01/users/bnachman/SLAC_pythia/Reclustering'
     else:
-        return './'
+        raise ValueError('Invalid user!')
 
 
 def generate_script(d):
-    return 'cd /u/at/lukedeo/jet-simulationssource\n./setup.sh\n./event-gen/event-gen --OutFile {file} \
+    return 'cd {}\n'.format(simulation_dir()) + 'source ./setup.sh\n./event-gen/event-gen --OutFile {file} \
     --Proc {process} --NEvents {events} --pThatMin {pthatmin} --pThatMax {pthatmax} --BosonMass {bosonmass}'.format(**d)
 
 def bsub_wrapper(script, name, queue, log):
