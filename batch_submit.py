@@ -38,7 +38,7 @@ def generate_script(d):
     --Proc {process} --NEvents {events} --pThatMin {pthatmin} --pThatMax {pthatmax} --BosonMass {bosonmass}'.format(**d)
 
 def bsub_wrapper(script, name, queue, log):
-    return 'bsub -o %s -q %s -J %s < %s' % (
+    return 'bsub -J "%s" -o %s -q %s < %s' % (
             log, queue, name, script
         )
 
