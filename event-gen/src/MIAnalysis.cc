@@ -203,6 +203,10 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     fTLeadingPt = leading_jet.perp();
     fTLeadingM = leading_jet.m();
     
+    TLorentzVector l(subjets[0].px(),subjets[0].py(),subjets[0].pz(),subjets[0].E());
+    TLorentzVector sl(subjets[1].px(),subjets[1].py(),subjets[1].pz(),subjets[1].E());
+
+    fTdeltaR = l.DeltaR(sl);
     
     vector<pair<double, double>  > consts_image;
     vector<pair<double, double>  > subjets_image; 
@@ -281,7 +285,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     // }
 
 
-    fTdeltaR = euclidean_distance(subjets_image[0], subjets_image[1]);
+    
 
     //Step 3: Rotate so the subleading subjet is at -pi/2
     //-------------------------------------------------------------------------

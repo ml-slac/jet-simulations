@@ -10,15 +10,18 @@ import skimage.transform as sk
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-def rotate_jet(jet, angle, in_radians = True, normalizer = 1800, dim=25):
+def rotate_jet(jet, angle, in_radians = True, normalizer = None, dim=25):
     """
     Take an *flat* unrotated in the form of an array from MI.exe, and an angle, 
     and rotates the jet to that angle using a passively rotated cubic spline 
     interpolation
     """
     im = jet.reshape((dim, dim))
-    np.clip(im, -1, normalizer, out=im)
-    im = np.flipud(im.T) / normalizer
+    if normalizer is not None:
+        np.clip(im, -1, normalizer, out=im)
+        im = np.flipud(im.T) / normalizer
+    else:
+        im = np.flipud(im.T)
 
     if in_radians:
         angle = np.rad2deg(angle)

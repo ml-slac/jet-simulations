@@ -34,6 +34,9 @@ import logging
 import numpy as np
 
 from jettools import plot_mean_jet, buffer_to_jet, is_signal
+import array
+
+
 
 
 logging.basicConfig(level=logging.INFO)
@@ -56,6 +59,10 @@ if __name__ == '__main__':
                         help = 'String to search for in\
                          filenames to indicate a signal file')
 
+    parser.add_argument('--dump', 
+                        default='dump.root',
+                        help = 'ROOT file to dump all this into (writes to TTree `images`)')
+
     parser.add_argument('--save', 
                         default='output.npy', 
                         help = 'Filename to write out the data.')
@@ -63,6 +70,7 @@ if __name__ == '__main__':
                         help = 'File prefix that\
                          will be part of plotting filenames.')
     parser.add_argument('--ptmin', default=200.0, help = 'minimum pt to consider')
+    parser.add_argument('--ptmax', default=400.0, help = 'maximum pt to consider')
 
     parser.add_argument('files', nargs='*', help='Files to pass in')
 
@@ -81,53 +89,90 @@ if __name__ == '__main__':
 
     try:
         from rootpy.io import root_open
+        from rootpy.tree import Tree, TreeModel, FloatCol, FloatArrayCol
     except ImportError:
         raise ImportError('rootpy (www.rootpy.org) not installed\
          -- install, then try again!')
 
+    class JetImage(TreeModel):
+        '''
+        Buffer for Jet Image
+        '''
+        image = FloatArrayCol(25 ** 2)
+        signal = FloatCol()
+        jet_pt = FloatCol()
+        jet_eta = FloatCol()
+        jet_phi = FloatCol()
+        jet_delta_R = FloatCol()
+        tau_32 = FloatCol()
+        tau_21 = FloatCol()
+        tau_1 = FloatCol()
+        tau_2 = FloatCol()
+        tau_3 = FloatCol()
+                
+            
+
     pix_per_side = -999
     entries = []
-    for fname in files:
-        logger.info('working on file: {}'.format(fname))
-        with root_open(fname) as f:
-            df = f.EventTree.to_array()
+    with root_open(args.dump, "recreate") as ROOTfile:
+        tree = Tree('images', model=JetImage)
+        
+        for fname in files:
+            logger.info('working on file: {}'.format(fname))
+            with root_open(fname) as f:
+                df = f.EventTree.to_array()
 
-            n_entries = df.shape[0]
+                n_entries = df.shape[0]
 
-            pix = df[0]['Intensity'].shape[0]
+                pix = df[0]['Intensity'].shape[0]
 
-            if not perfectsquare(pix):
-                raise ValueError('shape of image array must be square.')
+                if not perfectsquare(pix):
+                    raise ValueError('shape of image array must be square.')
 
-            if (pix_per_side > 1) and (int(np.sqrt(pix)) != pix_per_side):
-                raise ValueError('all files must have same sized images.')
-            
-            pix_per_side = int(np.sqrt(pix))
+                if (pix_per_side > 1) and (int(np.sqrt(pix)) != pix_per_side):
+                    raise ValueError('all files must have same sized images.')
+                
+                pix_per_side = int(np.sqrt(pix))
 
-            tag = is_signal(fname, signal_match)
-            for jet_nb, jet in enumerate(df):
-                if jet_nb % 1000 == 0:
-                    logger.info('processing jet {} of {} for file {}'.format(
-                            jet_nb, n_entries, fname
-                        ))
-                if jet['LeadingPt'] > float(args.ptmin):
-                    entries.append(
-                        buffer_to_jet(jet, tag, max_entry=2600, pix=pix_per_side)
+                tag = is_signal(fname, signal_match)
+                for jet_nb, jet in enumerate(df):
+                    if jet_nb % 1000 == 0:
+                        logger.info('processing jet {} of {} for file {}'.format(
+                                jet_nb, n_entries, fname
+                            )
                         )
+                    if (np.abs(jet['LeadingEta']) < 2) & (jet['LeadingPt'] > float(args.ptmin)) & (jet['LeadingPt'] < float(args.ptmax)):
+                        buf = buffer_to_jet(jet, tag, max_entry=100000, pix=pix_per_side)
+                        
+                        tree.image = buf[0].ravel().astype('float32')
+                        tree.signal = buf[1]
+                        tree.jet_pt = buf[2]
+                        tree.jet_eta = buf[3]
+                        tree.jet_phi = buf[4]
+                        tree.jet_delta_R = buf[5]
+                        tree.tau_32 = buf[6]
+                        tree.tau_21 = buf[7]
+                        tree.tau_1 = buf[8]
+                        tree.tau_2 = buf[9]
+                        tree.tau_3 = buf[10]
+                        entries.append(buf)
+                        tree.fill()
+        tree.write()
 
 
     # -- datatypes for outputted file.
-    _bufdtype = [('image', 'float64', (pix_per_side, pix_per_side)), 
-                 ('signal', float),
-                 ('jet_pt', float),
-                 ('jet_eta', float),
-                 ('jet_phi', float), 
-                 ('jet_mass', float),
-                 ('tau_32', float), 
-                 ('tau_21', float), 
-                 ('tau_32_old', float), 
-                 ('tau_21_old', float), 
-                 ('total_energy', float)]
+    _bufdtype = [('image', 'float32', (pix_per_side, pix_per_side)), 
+                 ('signal', 'float32'),
+                 ('jet_pt', 'float32'),
+                 ('jet_eta', 'float32'),
+                 ('jet_phi', 'float32'), 
+                 ('jet_mass', 'float32'),
+                 ('jet_delta_R', 'float32'),
+                 ('tau_32', 'float32'), 
+                 ('tau_21', 'float32'),
+                 ('tau_1', 'float32'),
+                 ('tau_2', 'float32'),
+                 ('tau_3', 'float32')]
 
     df = np.array(entries, dtype=_bufdtype)
     logger.info('saving to file: {}'.format(savefile))
