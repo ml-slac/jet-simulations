@@ -151,7 +151,7 @@ if __name__ == '__main__':
         log('Job output is {}.'.format(os.path.join(scratch_space, output_file)))
 
         # -- wrap the call to the batch system
-        cmd = invoke_bsub('j%sof%s' % (job + 1, args.jobs), 'medium', log_file)
+        cmd = invoke_bsub('j%sof%s' % (job + 1, len(chunked_files)), 'medium', log_file)
 
         log('Call is: {}'.format(cmd))
 
