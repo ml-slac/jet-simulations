@@ -141,61 +141,65 @@ if __name__ == '__main__':
             tree = Tree('images', model=JetImage)
 
         logger.info('working on file: {}'.format(fname))
-        with root_open(fname) as f:
-            df = f.EventTree.to_array()
+        try:
+            with root_open(fname) as f:
+                df = f.EventTree.to_array()
 
-            n_entries = df.shape[0]
+                n_entries = df.shape[0]
 
-            pix = df[0]['Intensity'].shape[0]
+                pix = df[0]['Intensity'].shape[0]
 
-            if not perfectsquare(pix):
-                raise ValueError('shape of image array must be square.')
+                if not perfectsquare(pix):
+                    raise ValueError('shape of image array must be square.')
 
-            if (pix_per_side > 1) and (int(np.sqrt(pix)) != pix_per_side):
-                raise ValueError('all files must have same sized images.')
-            
-            pix_per_side = int(np.sqrt(pix))
+                if (pix_per_side > 1) and (int(np.sqrt(pix)) != pix_per_side):
+                    raise ValueError('all files must have same sized images.')
+                
+                pix_per_side = int(np.sqrt(pix))
 
-            tag = is_signal(fname, signal_match)
-            for jet_nb, jet in enumerate(df):
-                if jet_nb % 1000 == 0:
-                    logger.info('processing jet {} of {} for file {}'.format(
-                            jet_nb, n_entries, fname
+                tag = is_signal(fname, signal_match)
+                for jet_nb, jet in enumerate(df):
+                    if jet_nb % 1000 == 0:
+                        logger.info('processing jet {} of {} for file {}'.format(
+                                jet_nb, n_entries, fname
+                            )
                         )
-                    )
-                if (np.abs(jet['LeadingEta']) < 2) & (jet['LeadingPt'] > float(args.ptmin)) & (jet['LeadingPt'] < float(args.ptmax)):
-                    buf = buffer_to_jet(jet, tag, max_entry=100000, pix=pix_per_side)
-                    
-                    tree.image = buf[0].ravel()#.astype('float32')
-                    tree.signal = buf[1]
-                    tree.jet_pt = buf[2]
-                    tree.jet_eta = buf[3]
-                    tree.jet_phi = buf[4]
-                    tree.jet_m = buf[5]
-                    tree.jet_delta_R = buf[6]
-                    tree.tau_32 = buf[7]
-                    tree.tau_21 = buf[8]
-                    tree.tau_1 = buf[9]
-                    tree.tau_2 = buf[10]
-                    tree.tau_3 = buf[11]
-                    if savefile is not None:
-                        entries.append(buf)
-                    if args.dump:
-                        tree.fill()
+                    if (np.abs(jet['LeadingEta']) < 2) & (jet['LeadingPt'] > float(args.ptmin)) & (jet['LeadingPt'] < float(args.ptmax)) & (jet['LeadingM'] < float(110)) & (jet['LeadingM'] > float(60)):
 
-        # -- Check for chunking
-        N_CHUNKED += 1
-        # -- we've reached the max chunk size
-        if N_CHUNKED >= CHUNK_MAX:
-            logger.info('{} files chunked, max is {}'.format(N_CHUNKED, CHUNK_MAX))
-            N_CHUNKED = 0
-            # -- clear the env, and reset
-            if args.dump:
-                tree.write()
-                ROOTfile.close()
-                ROOTfile = None
-                tree = None
-            CURRENT_CHUNK += 1
+                        buf = buffer_to_jet(jet, tag, max_entry=100000, pix=pix_per_side)
+                        if args.dump:
+                            tree.image = buf[0].ravel()#.astype('float32')
+                            tree.signal = buf[1]
+                            tree.jet_pt = buf[2]
+                            tree.jet_eta = buf[3]
+                            tree.jet_phi = buf[4]
+                            tree.jet_m = buf[5]
+                            tree.jet_delta_R = buf[6]
+                            tree.tau_32 = buf[7]
+                            tree.tau_21 = buf[8]
+                            tree.tau_1 = buf[9]
+                            tree.tau_2 = buf[10]
+                            tree.tau_3 = buf[11]
+                        if savefile is not None:
+                            entries.append(buf)
+                        if args.dump:
+                            tree.fill()
+
+            # -- Check for chunking
+            N_CHUNKED += 1
+            # -- we've reached the max chunk size
+            if N_CHUNKED >= CHUNK_MAX:
+                logger.info('{} files chunked, max is {}'.format(N_CHUNKED, CHUNK_MAX))
+                N_CHUNKED = 0
+                # -- clear the env, and reset
+                if args.dump:
+                    tree.write()
+                    ROOTfile.close()
+                    ROOTfile = None
+                    tree = None
+                CURRENT_CHUNK += 1
+        except:
+            logger.info('Skipping file {}'.format(fname))
     if args.dump:
         tree.write()
         ROOTfile.close()

@@ -124,7 +124,6 @@ if __name__ == '__main__':
 
 
     # -- which process?
-    process_code = process_dict[args.process]
 
 
     # for job in xrange(args.jobs):
