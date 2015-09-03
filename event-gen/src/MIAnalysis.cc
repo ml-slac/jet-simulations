@@ -179,7 +179,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         fastjet::antikt_algorithm, 1.0);
 
     fastjet::Filter trimmer(fastjet::JetDefinition(fastjet::kt_algorithm, 0.3),
-        fastjet::SelectorPtFractionMin(1e-6));
+        fastjet::SelectorPtFractionMin(0.05));
 
     fastjet::ClusterSequence csLargeR(particlesForJets, *m_jet_def);
 
@@ -187,38 +187,22 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         csLargeR.inclusive_jets(10.0));
     fastjet::PseudoJet leading_jet = trimmer(considered_jets[0]);
 
-    //Now, let's make an image out of the leading jet. 
-    vector<fastjet::PseudoJet> subjets = sorted_by_pt(leading_jet.pieces());
-
-    if (subjets.size() < 2)
-    {
-        return;
-    }
-
-    // bool overall = true;
-    // Dump kinematics of the leading jet.
-    // For the leading SUBjet, put subjets[0].
     fTLeadingEta = leading_jet.eta();
     fTLeadingPhi = leading_jet.phi();
     fTLeadingPt = leading_jet.perp();
     fTLeadingM = leading_jet.m();
     
-    TLorentzVector l(subjets[0].px(),subjets[0].py(),subjets[0].pz(),subjets[0].E());
-    TLorentzVector sl(subjets[1].px(),subjets[1].py(),subjets[1].pz(),subjets[1].E());
-
-    fTdeltaR = l.DeltaR(sl);
-    
-    vector<pair<double, double>  > consts_image;
-    vector<pair<double, double>  > subjets_image; 
-
-    for (int i = 0; i < 2; i++)
-    {
-        pair<double, double> subjet_hold;
-        subjet_hold.first = subjets[i].eta();
-        subjet_hold.second = subjets[i].phi();
-        subjets_image.push_back(subjet_hold);
+    fTdeltaR = 0.;
+    if (leading_jet.pieces().size() > 1){
+      vector<fastjet::PseudoJet> subjets = leading_jet.pieces();
+      TLorentzVector l(subjets[0].px(),subjets[0].py(),subjets[0].pz(),subjets[0].E());
+      TLorentzVector sl(subjets[1].px(),subjets[1].py(),subjets[1].pz(),subjets[1].E());
+      fTdeltaR = l.DeltaR(sl); 
+      fTSubLeadingEta = sl.Eta()-l.Eta();
+      fTSubLeadingPhi = subjets[1].delta_phi_to(subjets[0]);
     }
     
+    vector<pair<double, double>  > consts_image;
     vector<fastjet::PseudoJet> sorted_consts = sorted_by_pt(leading_jet.constituents());
 
     for(int i = 0; i < sorted_consts.size(); i++)
@@ -229,17 +213,98 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         consts_image.push_back(const_hold);
     }
 
-    //Step 1: Center on the leading subjet
+    vector<fastjet::PseudoJet> subjets = leading_jet.pieces();
+
+    //Step 1: Center on the jet axis.
     for (int i =0; i < sorted_consts.size(); i++)
     {
-        consts_image[i].first = consts_image[i].first-subjets_image[0].first;
-        consts_image[i].second = consts_image[i].second-subjets_image[0].second;
+      consts_image[i].first = consts_image[i].first-leading_jet.eta();
+      consts_image[i].second = sorted_consts[i].delta_phi_to(subjets[0]); //use delta phi to take care of the dis-continuity in phi
     }
-    for (int i =1; i >= 0; i--)
-    {
-        subjets_image[i].first = subjets_image[i].first - subjets_image[0].first;
-        subjets_image[i].second = subjets_image[i].second- subjets_image[0].second;
+
+    //Quickly run PCA for the rotation.
+    double xbar = 0.;
+    double ybar = 0.;
+    double x2bar = 0.;
+    double y2bar = 0.;
+    double xybar = 0.;
+    double n = 0;
+
+    for(int i = 0; i < leading_jet.constituents().size(); i++)
+      {
+        double x = consts_image[i].first;
+        double y = consts_image[i].second;
+	double E = sorted_consts[i].e();
+        n+=E;
+        xbar+=x*E;
+        ybar+=y*E;
+      }
+
+    double mux = xbar / n;
+    double muy = ybar / n;
+
+    xbar = 0.;
+    ybar = 0.;
+    n = 0.;
+
+    for(int i = 0; i < leading_jet.constituents().size(); i++)
+      {
+        double x = consts_image[i].first - mux;
+        double y = consts_image[i].second - muy;
+        double E = sorted_consts[i].e();
+        n+=E;
+        xbar+=x*E;
+        ybar+=y*E;
+        x2bar+=x*x*E;
+        y2bar+=y*y*E;
+        xybar+=x*y*E;
+      }
+
+    double sigmax2 = x2bar / n - mux*mux;
+    double sigmay2 = y2bar / n - muy*muy;
+    double sigmaxy = xybar / n - mux*muy;
+    double lamb_min = 0.5* ( sigmax2 + sigmay2 - sqrt( (sigmax2-sigmay2)*(sigmax2-sigmay2) + 4*sigmaxy*sigmaxy) );
+    double lamb_max = 0.5* ( sigmax2 + sigmay2 + sqrt( (sigmax2-sigmay2)*(sigmax2-sigmay2) + 4*sigmaxy*sigmaxy) );
+
+    double dir_x = sigmax2+sigmaxy-lamb_min;
+    double dir_y = sigmay2+sigmaxy-lamb_min;
+
+    //The first PC is only defined up to a sign.  Let's have it point toward the side of the jet with the most energy.
+
+    double Eup = 0.;
+    double Edn = 0.;
+
+    for(int i = 0; i < leading_jet.constituents().size(); i++)
+      {
+	double x = consts_image[i].first - mux;
+        double y = consts_image[i].second - muy;
+	double E = sorted_consts[i].e();
+	double dotprod = dir_x*x+dir_y*y;
+	if (dotprod > 0) Eup+=E;
+	else Edn+=E;
+      }
+    
+    if (Edn < Eup){
+      dir_x = -dir_x;
+      dir_y = -dir_y;
     }
+
+    fTPCEta = dir_x;
+    fTPCPhi = dir_y;
+
+    //Doing a little check to see how often the PC points in the direction of the subleading subjet if it exists.
+    //std::cout << "new event " << 100*(dir_x) << " " << 100*(dir_y) << " " << leading_jet.m() << " " << leading_jet.perp() << " " << sigmax2*100 << " " << sigmay2*100 << " " << sigmaxy*100 << " " << 100*lamb_min << " " << 100*lamb_max << " " << 100*(sigmax2+sigmaxy-lamb_max) << " " << 100*(sigmay2+sigmaxy-lamb_max) << std::endl; 
+    //for (int i=0; i<leading_jet.pieces().size(); i++){
+    //  std::cout << i << " " << (leading_jet.pieces()[i].eta() - subjets[0].eta())*100 << " " << leading_jet.pieces()[i].delta_phi_to(subjets[0])*100 << " " << leading_jet.pieces()[i].e() << std::endl; 
+    //}
+      
+    //return;
+
+    //for (int i =1; i >= 0; i--)
+    //{
+    //    subjets_image[i].first = subjets_image[i].first - subjets_image[0].first;
+    //    subjets_image[i].second = subjets_image[i].second- subjets_image[0].second;
+    //}
 
     //Step 2: Fill in the unrotated image
     //-------------------------------------------------------------------------   
@@ -289,6 +354,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
 
     //Step 3: Rotate so the subleading subjet is at -pi/2
     //-------------------------------------------------------------------------
+    /*
     fTSubLeadingEta = subjets_image[1].first;
     fTSubLeadingPhi = subjets_image[1].second;
     double theta = atan(subjets_image[1].second/subjets_image[1].first)+2.*atan(1.); //atan(1) = pi/4
@@ -317,6 +383,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     }
 
     theta = atan(subjets_image[1].second/subjets_image[1].first);
+    */
 
     // //Step 4b): fill in the rotated image
     // //-------------------------------------------------------------------------
@@ -400,11 +467,14 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("SubLeadingEta", &fTSubLeadingEta, "SubLeadingEta/F");
     tT->Branch("SubLeadingPhi", &fTSubLeadingPhi, "SubLeadingPhi/F");
 
+    tT->Branch("PCEta", &fTPCEta, "PCEta/F");
+    tT->Branch("PCPhi", &fTPCPhi, "PCPhi/F");
+
     tT->Branch("LeadingEta", &fTLeadingEta, "LeadingEta/F");
     tT->Branch("LeadingPhi", &fTLeadingPhi, "LeadingPhi/F");
     tT->Branch("LeadingPt", &fTLeadingPt, "LeadingPt/F");
     tT->Branch("LeadingM", &fTLeadingM, "LeadingM/F");
-    tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
+    //tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
 
     tT->Branch("Tau1", &fTTau1, "Tau1/F");
     tT->Branch("Tau2", &fTTau2, "Tau2/F");
@@ -425,7 +495,9 @@ void MIAnalysis::ResetBranches(){
     fTNFilled = MaxN;
     fTSubLeadingPhi = -999;
     fTSubLeadingEta = -999;
-    fTRotationAngle = -999;
+    fTPCPhi = -999;
+    fTPCEta = -999;
+    //fTRotationAngle = -999;
   
     fTTau32 = -999;
     fTTau21 = -999;
