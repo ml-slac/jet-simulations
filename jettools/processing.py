@@ -5,8 +5,19 @@ author: Luke de Oliveira, July 2015
 Simple utilities for processing the junk that comes out of the ntuple event generation.
 '''
 
+import numpy.linalg as la
 import numpy as np
 from .jettools import rotate_jet, flip_jet, plot_mean_jet
+
+
+
+ 
+def angle_from_vec(v1, v2):
+    # cosang = np.dot(v1, v2)
+    cosang = v1
+    sinang = la.norm(np.cross(np.array([1.0, 0.0]), np.array([v1, v2])))
+    return np.arctan2(sinang, cosang)
+
 
 def buffer_to_jet(entry, tag = 0, side = 'r', max_entry = None, pix = 25):
     """
@@ -17,10 +28,12 @@ def buffer_to_jet(entry, tag = 0, side = 'r', max_entry = None, pix = 25):
 
     The `entry` must have the following fields (as produced by event-gen)
         * Intensity
-        * RotationAngle
+        * PCEta, PCPhi
         * LeadingPt
         * LeadingEta
         * LeadingPhi
+        * SubLeadingEta
+        * SubLeadingPhi
         * LeadingM
         * DeltaR
         * Tau32
@@ -28,7 +41,18 @@ def buffer_to_jet(entry, tag = 0, side = 'r', max_entry = None, pix = 25):
         * Tau{n} for n = 1, 2, 3 
     """
 
-    image = flip_jet(rotate_jet(np.array(entry['Intensity']), -entry['RotationAngle'], normalizer=4000.0, dim=pix), side)
+
+    if (entry['SubLeadingEta'] < -10) | (entry['SubLeadingPhi'] < -10):
+        e, p = (entry['PCEta'], entry['PCPhi'])
+    else:
+        e, p = (entry['SubLeadingEta'], entry['SubLeadingPhi'])
+    
+    angle = np.arctan(p / e) + 2.0 * np.arctan(1.0)
+
+    if (-np.sin(angle) * e + np.cos(angle) * p) > 0:
+        angle += -4.0 * np.arctan(1.0)
+
+    image = flip_jet(rotate_jet(np.array(entry['Intensity']), -angle, normalizer=4000.0, dim=pix), side)
     e_norm = np.linalg.norm(image)
     return ((image / e_norm).astype('float32'), np.float32(tag), 
         np.float32(entry['LeadingPt']), np.float32(entry['LeadingEta']), 

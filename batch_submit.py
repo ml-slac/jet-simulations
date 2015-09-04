@@ -96,7 +96,7 @@ if __name__ == '__main__':
     parser.add_argument('--process', type=str, default='qcd',
         help='which process?', choices=['qcd', 'wprime'])
 
-    process_dict = {'qcd' : 4, 'wprime' : 3}
+    process_dict = {'qcd' : 4, 'wprime' : 2}
 
     args = parser.parse_args()
 

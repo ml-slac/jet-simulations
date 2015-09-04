@@ -198,7 +198,7 @@ if __name__ == '__main__':
                     ROOTfile = None
                     tree = None
                 CURRENT_CHUNK += 1
-        except:
+        except KeyboardInterrupt:
             logger.info('Skipping file {}'.format(fname))
     if args.dump:
         tree.write()
