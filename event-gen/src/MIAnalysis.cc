@@ -228,7 +228,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     //Step 1: Center on the jet axis.
     for (int i =0; i < sorted_consts.size(); i++)
     {
-      consts_image[i].first = consts_image[i].first-leading_jet.eta();
+      consts_image[i].first = consts_image[i].first-subjets[0].eta();
       consts_image[i].second = sorted_consts[i].delta_phi_to(subjets[0]); //use delta phi to take care of the dis-continuity in phi
     }
 
