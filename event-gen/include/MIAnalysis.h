@@ -82,6 +82,11 @@ class MIAnalysis
         float fTLeadingPt;
         float fTLeadingM;
         
+	float fTLeadingEta_nopix;
+        float fTLeadingPhi_nopix;
+        float fTLeadingPt_nopix;
+        float fTLeadingM_nopix;
+
         float fTSubLeadingEta;
         float fTSubLeadingPhi;
 	
@@ -96,6 +101,13 @@ class MIAnalysis
 
         float fTTau21;
         float fTTau32;
+
+	float fTTau1_nopix;
+        float fTTau2_nopix;
+        float fTTau3_nopix;
+
+	float fTTau21_nopix;
+	float fTTau32_nopix;
 
         float fTdeltaR;
 

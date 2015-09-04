@@ -125,6 +125,7 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     // new event-----------------------
     fTEventNumber = ievt;
     std::vector <fastjet::PseudoJet> particlesForJets;
+    std::vector <fastjet::PseudoJet> particlesForJets_nopixel;
 
     detector->Reset();
    
@@ -152,7 +153,8 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         // do bin += value in the associated detector bin
         detector->SetBinContent(ybin, phibin, 
                                 detector->GetBinContent(ybin, phibin) + p.e());
-      
+	fastjet::PseudoJet p_nopix(p.px(),p.py(),p.pz(),p.e());
+	particlesForJets_nopixel.push_back(p_nopix);
     }  
     // end particle loop -----------------------------------------------  
 
@@ -182,15 +184,23 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
         fastjet::SelectorPtFractionMin(0.05));
 
     fastjet::ClusterSequence csLargeR(particlesForJets, *m_jet_def);
+    fastjet::ClusterSequence csLargeR_nopix(particlesForJets_nopixel, *m_jet_def);
 
     vector<fastjet::PseudoJet> considered_jets = fastjet::sorted_by_pt(
-        csLargeR.inclusive_jets(10.0));
+								       csLargeR.inclusive_jets(10.0));
+    vector<fastjet::PseudoJet> considered_jets_nopix = fastjet::sorted_by_pt(
+									     csLargeR_nopix.inclusive_jets(10.0));
     fastjet::PseudoJet leading_jet = trimmer(considered_jets[0]);
+    fastjet::PseudoJet leading_jet_nopix = trimmer(considered_jets_nopix[0]);
 
     fTLeadingEta = leading_jet.eta();
     fTLeadingPhi = leading_jet.phi();
     fTLeadingPt = leading_jet.perp();
     fTLeadingM = leading_jet.m();
+    fTLeadingEta_nopix = leading_jet_nopix.eta();
+    fTLeadingPhi_nopix = leading_jet_nopix.phi();
+    fTLeadingPt_nopix = leading_jet_nopix.perp();
+    fTLeadingM_nopix = leading_jet_nopix.m();
     
     fTdeltaR = 0.;
     if (leading_jet.pieces().size() > 1){
@@ -427,6 +437,12 @@ void MIAnalysis::AnalyzeEvent(int ievt, Pythia8::Pythia* pythia8, Pythia8::Pythi
     fTTau32 = (abs(fTTau2) < 1e-4 ? -10 : fTTau3 / fTTau2);
     fTTau21 = (abs(fTTau1) < 1e-4 ? -10 : fTTau2 / fTTau1);
 
+    fTTau1_nopix = (float) subjettiness_1.result(leading_jet_nopix);
+    fTTau2_nopix = (float) subjettiness_2.result(leading_jet_nopix);
+    fTTau3_nopix = (float) subjettiness_3.result(leading_jet_nopix);
+
+    fTTau32_nopix = (abs(fTTau2_nopix) < 1e-4 ? -10 : fTTau3_nopix / fTTau2_nopix);
+    fTTau21_nopix = (abs(fTTau1_nopix) < 1e-4 ? -10 : fTTau2_nopix / fTTau1_nopix);
 
     // // Step 7: Fill in nsubjettiness (old)
     // //----------------------------------------------------------------------------
@@ -476,14 +492,27 @@ void MIAnalysis::DeclareBranches()
     tT->Branch("LeadingM", &fTLeadingM, "LeadingM/F");
     //tT->Branch("RotationAngle", &fTRotationAngle, "RotationAngle/F");
 
+    tT->Branch("LeadingEta_nopix", &fTLeadingEta_nopix, "LeadingEta_nopix/F");
+    tT->Branch("LeadingPhi_nopix", &fTLeadingPhi_nopix, "LeadingPhi_nopix/F");
+    tT->Branch("LeadingPt_nopix", &fTLeadingPt_nopix, "LeadingPt_nopix/F");
+    tT->Branch("LeadingM_nopix", &fTLeadingM_nopix, "LeadingM_nopix/F");
+
     tT->Branch("Tau1", &fTTau1, "Tau1/F");
     tT->Branch("Tau2", &fTTau2, "Tau2/F");
     tT->Branch("Tau3", &fTTau3, "Tau3/F");
+
+    tT->Branch("Tau1_nopix", &fTTau1_nopix, "Tau1_nopix/F");
+    tT->Branch("Tau2_nopix", &fTTau2_nopix, "Tau2_nopix/F");
+    tT->Branch("Tau3_nopix", &fTTau3_nopix, "Tau3_nopix/F");
 
     tT->Branch("DeltaR", &fTdeltaR, "DeltaR/F");
 
     tT->Branch("Tau32", &fTTau32, "Tau32/F");
     tT->Branch("Tau21", &fTTau21, "Tau21/F");
+    
+    tT->Branch("Tau32_nopix", &fTTau32_nopix, "Tau32_nopix/F");
+    tT->Branch("Tau21_nopix", &fTTau21_nopix, "Tau21_nopix/F");
+    
     // tT->Branch("Tau32old", &fTTau32old, "Tau32old/F");
     // tT->Branch("Tau21old", &fTTau21old, "Tau21old/F");
     return;
@@ -502,9 +531,16 @@ void MIAnalysis::ResetBranches(){
     fTTau32 = -999;
     fTTau21 = -999;
 
-    fTTau1 = 999;
-    fTTau2 = 999;
-    fTTau3 = 999;
+    fTTau1 = -999;
+    fTTau2 = -999;
+    fTTau3 = -999;
+
+    fTTau32_nopix = -999;
+    fTTau21_nopix = -999;
+
+    fTTau1_nopix = -999;
+    fTTau2_nopix = -999;
+    fTTau3_nopix = -999;
 
     // fTTau32old = -999;
     // fTTau21old = -999;
@@ -513,6 +549,11 @@ void MIAnalysis::ResetBranches(){
     fTLeadingPhi = -999;
     fTLeadingPt = -999;
     fTLeadingM = -999;
+
+    fTLeadingEta_nopix = -999;
+    fTLeadingPhi_nopix = -999;
+    fTLeadingPt_nopix = -999;
+    fTLeadingM_nopix = -999;
 
     for (int iP=0; iP < MaxN; ++iP)
     {
