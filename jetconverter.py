@@ -54,8 +54,8 @@ if __name__ == '__main__':
     parser.add_argument('--plot',  
                         help = 'File prefix that\
                          will be part of plotting filenames.')
-    parser.add_argument('--ptmin', default=200.0, help = 'minimum pt to consider')
-    parser.add_argument('--ptmax', default=400.0, help = 'maximum pt to consider')
+    parser.add_argument('--ptmin', default=250.0, help = 'minimum pt to consider')
+    parser.add_argument('--ptmax', default=300.0, help = 'maximum pt to consider')
 
     parser.add_argument('--chunk', default=10, type=int, help = 'number of files to chunk together')
 
@@ -126,7 +126,9 @@ if __name__ == '__main__':
     N_CHUNKED = 0
     CURRENT_CHUNK = 0
 
-
+    import glob
+    # -- hack
+    # files = glob.glob(args.files[0] + '/*.root')
 
 
     ROOTfile = None
@@ -135,10 +137,13 @@ if __name__ == '__main__':
         
     for fname in files:
         logger.info('ON: CHUNK #{}'.format(CURRENT_CHUNK))
-        if args.dump and ROOTfile is None:
-            logger.info('Making ROOT file: {}'.format(args.dump + '-chnk{}.root'.format(CURRENT_CHUNK)))
-            ROOTfile = root_open(args.dump + '-chnk{}.root'.format(CURRENT_CHUNK), "recreate")
-            tree = Tree('images', model=JetImage)
+        try:
+            if args.dump and ROOTfile is None:
+                logger.info('Making ROOT file: {}'.format(args.dump + '-chnk{}.root'.format(CURRENT_CHUNK)))
+                ROOTfile = root_open(args.dump + '-chnk{}.root'.format(CURRENT_CHUNK), "recreate")
+                tree = Tree('images', model=JetImage)
+        except Exception:
+            continue
 
         logger.info('working on file: {}'.format(fname))
         try:
@@ -164,7 +169,7 @@ if __name__ == '__main__':
                                 jet_nb, n_entries, fname
                             )
                         )
-                    if (np.abs(jet['LeadingEta']) < 2) & (jet['LeadingPt'] > float(args.ptmin)) & (jet['LeadingPt'] < float(args.ptmax)) & (jet['LeadingM'] < float(110)) & (jet['LeadingM'] > float(60)):
+                    if (np.abs(jet['LeadingEta']) < 2) & (jet['LeadingPt'] > float(args.ptmin)) & (jet['LeadingPt'] < float(args.ptmax)) & (jet['LeadingM'] < float(95)) & (jet['LeadingM'] > float(65)):
 
                         buf = buffer_to_jet(jet, tag, max_entry=100000, pix=pix_per_side)
                         if args.dump:
@@ -200,6 +205,8 @@ if __name__ == '__main__':
                 CURRENT_CHUNK += 1
         except KeyboardInterrupt:
             logger.info('Skipping file {}'.format(fname))
+        except AttributeError:
+            logger.info('Skipping file {} for compatibility reasons'.format(fname))
     if args.dump:
         tree.write()
         ROOTfile.close()

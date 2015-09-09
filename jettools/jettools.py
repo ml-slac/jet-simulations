@@ -4,9 +4,12 @@ author: Luke de Oliveira, Mar. 2015
 
 Provides support for jet rotation and flipping
 
+sukiyaki DL
 '''
 import numpy as np
 import skimage.transform as sk
+# import PIL
+from scipy import ndimage
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
@@ -26,6 +29,9 @@ def rotate_jet(jet, angle, in_radians = True, normalizer = None, dim=25):
     if in_radians:
         angle = np.rad2deg(angle)
 
+    # return ndimage.interpolation.rotate(im, angle, reshape=False, order=3)
+    # i = PIL.Image.fromarray(im).rotate(angle, resample=PIL.Image.BICUBIC)
+    # return np.array(i)
     return sk.rotate(im, angle, order = 3)
 
 
