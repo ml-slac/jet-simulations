@@ -128,14 +128,14 @@ if __name__ == '__main__':
 
     import glob
     # -- hack
-    # files = glob.glob(args.files[0] + '/*.root')
+    files = args.files # -- glob.glob(args.files[0] + '/*.root')
 
 
     ROOTfile = None
     # ROOTfile = None
 
         
-    for fname in files:
+    for i, fname in enumerate(files):
         logger.info('ON: CHUNK #{}'.format(CURRENT_CHUNK))
         try:
             if args.dump and ROOTfile is None:
@@ -145,7 +145,7 @@ if __name__ == '__main__':
         except Exception:
             continue
 
-        logger.info('working on file: {}'.format(fname))
+        logger.info('({} of {}) working on file: {}'.format(i, len(files), fname))
         try:
             with root_open(fname) as f:
                 df = f.EventTree.to_array()
